@@ -38,3 +38,17 @@ A robust, enterprise-grade **Compliance Monitoring & Audit Platform** built with
 - [Contributing](#-contributing)
 - [License](#-license)
 ---
+
+## 🌐 Overview
+ 
+Organizations operating in regulated industries (finance, healthcare, government, etc.) must continuously monitor their systems, enforce internal policies, and produce accurate audit trails for regulatory bodies. Manual processes are error-prone and slow.
+ 
+The **Compliance Monitoring & Audit Platform** automates this entire lifecycle:
+ 
+1. **Define** compliance rules and control frameworks (e.g., ISO 27001, SOC 2, GDPR, HIPAA)
+2. **Monitor** system events, user actions, and data access in real-time
+3. **Detect** policy violations and anomalous behavior automatically
+4. **Audit** — maintain immutable, tamper-evident logs of all activity
+5. **Report** — generate compliance evidence reports for auditors and executives
+---
+ 

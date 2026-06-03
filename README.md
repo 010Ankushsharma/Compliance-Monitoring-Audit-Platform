@@ -87,4 +87,43 @@ The **Compliance Monitoring & Audit Platform** automates this entire lifecycle:
 - API rate limiting and IP allowlisting
 - Encrypted data at rest and in transit
 ---
-
+## 🏗️ Architecture
+ 
+```
+┌───────────────────────────────────────────────────────────────────┐
+│                         Client Applications                       │
+│              (Web UI / Mobile App / Third-Party Systems)          │
+└────────────────────────────┬──────────────────────────────────────┘
+                             │ HTTPS / REST
+┌────────────────────────────▼──────────────────────────────────────┐
+│                        API Gateway Layer                          │
+│               (Spring Security + Rate Limiter + JWT)              │
+└──────┬──────────────┬───────────────┬───────────────┬─────────────┘
+       │              │               │               │
+┌──────▼────┐  ┌──────▼────┐  ┌──────▼────┐  ┌──────▼────────┐
+│  Policy   │  │  Audit    │  │ Monitor   │  │  Report       │
+│  Service  │  │  Service  │  │ Service   │  │  Service      │
+└──────┬────┘  └──────┬────┘  └──────┬────┘  └──────┬────────┘
+       │              │               │               │
+┌──────▼──────────────▼───────────────▼───────────────▼──────────┐
+│                      Domain & Business Logic Layer               │
+│               (Violation Engine / Risk Scoring / Rules)         │
+└──────────────────────────────┬──────────────────────────────────┘
+                               │
+       ┌───────────────────────┼───────────────────────┐
+       │                       │                       │
+┌──────▼──────┐        ┌───────▼──────┐        ┌──────▼──────┐
+│  PostgreSQL │        │  Apache      │        │   Redis     │
+│  (Primary   │        │  Kafka       │        │  (Cache +   │
+│   Storage)  │        │  (Events)    │        │   Sessions) │
+└─────────────┘        └──────────────┘        └─────────────┘
+```
+ 
+The platform follows a **layered architecture** with clear separation between API, service, and persistence concerns:
+ 
+- **Controller Layer** — REST endpoints, request validation, response mapping
+- **Service Layer** — Business logic, orchestration, rule evaluation
+- **Repository Layer** — JPA/Hibernate data access with Spring Data
+- **Event Layer** — Kafka producers/consumers for async processing
+- **Security Layer** — JWT filter chain, RBAC enforcement
+---

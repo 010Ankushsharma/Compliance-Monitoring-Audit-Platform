@@ -8,3 +8,33 @@
 A robust, enterprise-grade **Compliance Monitoring & Audit Platform** built with Java Spring Boot. The platform enables organizations to define compliance policies, monitor system and user activities in real-time, generate audit trails, detect violations, and produce regulatory reports — all through a secure, scalable REST API.
  
 ---
+## 📋 Table of Contents
+ 
+- [Overview](#-overview)
+- [Features](#-features)
+- [Architecture](#-architecture)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Configuration](#configuration)
+  - [Running the Application](#running-the-application)
+- [API Reference](#-api-reference)
+  - [Authentication](#authentication)
+  - [Compliance Policies](#compliance-policies)
+  - [Audit Logs](#audit-logs)
+  - [Monitoring & Alerts](#monitoring--alerts)
+  - [Reports](#reports)
+- [Database Schema](#-database-schema)
+- [Security](#-security)
+- [Event-Driven Architecture](#-event-driven-architecture)
+- [Testing](#-testing)
+- [Deployment](#-deployment)
+  - [Docker](#docker)
+  - [Kubernetes](#kubernetes)
+- [Environment Variables](#-environment-variables)
+- [Roadmap](#-roadmap)
+- [Contributing](#-contributing)
+- [License](#-license)
+---

@@ -147,3 +147,128 @@ The platform follows a **layered architecture** with clear separation between AP
 | Logging | SLF4J + Logback, structured JSON logs |
  
 ---
+
+
+## 📁 Project Structure
+ 
+```
+compliance-audit-platform/
+│
+├── src/
+│   ├── main/
+│   │   ├── java/com/company/compliance/
+│   │   │   │
+│   │   │   ├── ComplianceAuditApplication.java       # Entry point
+│   │   │   │
+│   │   │   ├── config/                               # App configuration
+│   │   │   │   ├── SecurityConfig.java
+│   │   │   │   ├── KafkaConfig.java
+│   │   │   │   ├── RedisConfig.java
+│   │   │   │   ├── SwaggerConfig.java
+│   │   │   │   └── AuditConfig.java
+│   │   │   │
+│   │   │   ├── controller/                           # REST controllers
+│   │   │   │   ├── AuthController.java
+│   │   │   │   ├── PolicyController.java
+│   │   │   │   ├── AuditLogController.java
+│   │   │   │   ├── MonitoringController.java
+│   │   │   │   ├── AlertController.java
+│   │   │   │   ├── ReportController.java
+│   │   │   │   └── DashboardController.java
+│   │   │   │
+│   │   │   ├── service/                              # Business logic
+│   │   │   │   ├── PolicyService.java
+│   │   │   │   ├── AuditLogService.java
+│   │   │   │   ├── ViolationDetectionService.java
+│   │   │   │   ├── AlertService.java
+│   │   │   │   ├── ReportGenerationService.java
+│   │   │   │   ├── RiskScoringService.java
+│   │   │   │   └── NotificationService.java
+│   │   │   │
+│   │   │   ├── domain/                               # Domain models
+│   │   │   │   ├── entity/
+│   │   │   │   │   ├── Policy.java
+│   │   │   │   │   ├── PolicyRule.java
+│   │   │   │   │   ├── AuditLog.java
+│   │   │   │   │   ├── ComplianceViolation.java
+│   │   │   │   │   ├── Alert.java
+│   │   │   │   │   ├── Report.java
+│   │   │   │   │   ├── User.java
+│   │   │   │   │   └── Organization.java
+│   │   │   │   ├── enums/
+│   │   │   │   │   ├── Severity.java
+│   │   │   │   │   ├── PolicyStatus.java
+│   │   │   │   │   ├── ViolationStatus.java
+│   │   │   │   │   └── RegulatoryFramework.java
+│   │   │   │   └── event/
+│   │   │   │       ├── AuditEvent.java
+│   │   │   │       └── ViolationEvent.java
+│   │   │   │
+│   │   │   ├── repository/                           # Data access
+│   │   │   │   ├── PolicyRepository.java
+│   │   │   │   ├── AuditLogRepository.java
+│   │   │   │   ├── ViolationRepository.java
+│   │   │   │   ├── AlertRepository.java
+│   │   │   │   └── ReportRepository.java
+│   │   │   │
+│   │   │   ├── kafka/                                # Kafka producers/consumers
+│   │   │   │   ├── producer/
+│   │   │   │   │   ├── AuditEventProducer.java
+│   │   │   │   │   └── ViolationEventProducer.java
+│   │   │   │   └── consumer/
+│   │   │   │       ├── AuditEventConsumer.java
+│   │   │   │       └── ViolationEventConsumer.java
+│   │   │   │
+│   │   │   ├── security/                             # Auth & security
+│   │   │   │   ├── JwtTokenProvider.java
+│   │   │   │   ├── JwtAuthenticationFilter.java
+│   │   │   │   ├── UserDetailsServiceImpl.java
+│   │   │   │   └── AuditAspect.java                 # AOP audit interceptor
+│   │   │   │
+│   │   │   ├── dto/                                  # Request/Response DTOs
+│   │   │   │   ├── request/
+│   │   │   │   └── response/
+│   │   │   │
+│   │   │   ├── mapper/                               # Entity ↔ DTO mappers
+│   │   │   │
+│   │   │   └── exception/                            # Error handling
+│   │   │       ├── GlobalExceptionHandler.java
+│   │   │       ├── PolicyNotFoundException.java
+│   │   │       └── ViolationException.java
+│   │   │
+│   │   └── resources/
+│   │       ├── application.yml
+│   │       ├── application-dev.yml
+│   │       ├── application-prod.yml
+│   │       └── db/migration/                         # Flyway SQL scripts
+│   │           ├── V1__init_schema.sql
+│   │           ├── V2__seed_frameworks.sql
+│   │           └── V3__add_risk_scoring.sql
+│   │
+│   └── test/
+│       └── java/com/company/compliance/
+│           ├── controller/
+│           ├── service/
+│           └── integration/
+│
+├── docker/
+│   ├── Dockerfile
+│   └── docker-compose.yml
+│
+├── k8s/
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   ├── configmap.yaml
+│   └── ingress.yaml
+│
+├── docs/
+│   ├── api-reference.md
+│   └── architecture.md
+│
+├── pom.xml
+├── .env.example
+├── .gitignore
+└── README.md
+```
+ 
+---

@@ -127,3 +127,23 @@ The platform follows a **layered architecture** with clear separation between AP
 - **Event Layer** — Kafka producers/consumers for async processing
 - **Security Layer** — JWT filter chain, RBAC enforcement
 ---
+## 🛠️ Tech Stack
+ 
+| Category | Technology |
+|---|---|
+| Language | Java 17 |
+| Framework | Spring Boot 3.x |
+| Security | Spring Security 6, JWT, OAuth2 |
+| Persistence | Spring Data JPA, Hibernate |
+| Database | PostgreSQL 15 |
+| Migrations | Flyway |
+| Caching | Redis (Spring Cache) |
+| Messaging | Apache Kafka |
+| API Docs | SpringDoc OpenAPI 3 (Swagger UI) |
+| Build Tool | Apache Maven |
+| Testing | JUnit 5, Mockito, Testcontainers |
+| Containerization | Docker, Docker Compose |
+| Monitoring | Spring Actuator, Micrometer, Prometheus |
+| Logging | SLF4J + Logback, structured JSON logs |
+ 
+---

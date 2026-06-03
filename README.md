@@ -272,3 +272,107 @@ compliance-audit-platform/
 ```
  
 ---
+## 🚀 Getting Started
+ 
+### Prerequisites
+ 
+Ensure the following are installed on your machine:
+ 
+- **Java 17+** — [Download](https://adoptium.net/)
+- **Maven 3.8+** — [Download](https://maven.apache.org/download.cgi)
+- **Docker & Docker Compose** — [Download](https://www.docker.com/get-started)
+- **PostgreSQL 15** (or run via Docker)
+- **Redis 7** (or run via Docker)
+- **Apache Kafka** (or run via Docker)
+### Installation
+ 
+**1. Clone the repository**
+ 
+```bash
+git clone https://github.com/your-org/compliance-audit-platform.git
+cd compliance-audit-platform
+```
+ 
+**2. Copy the environment file**
+ 
+```bash
+cp .env.example .env
+# Edit .env with your configuration values
+```
+ 
+**3. Start infrastructure services with Docker Compose**
+ 
+```bash
+docker-compose up -d postgres redis kafka zookeeper
+```
+ 
+**4. Build the application**
+ 
+```bash
+mvn clean install -DskipTests
+```
+ 
+### Configuration
+ 
+Edit `src/main/resources/application.yml` or provide values through environment variables:
+ 
+```yaml
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/compliance_db
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: compliance-platform
+      auto-offset-reset: earliest
+ 
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: 3600000         # 1 hour
+    refresh-expiration-ms: 604800000  # 7 days
+  audit:
+    retention-days: 365
+    hash-algorithm: SHA-256
+  notifications:
+    email:
+      smtp-host: ${SMTP_HOST}
+      smtp-port: ${SMTP_PORT}
+      from: noreply@yourcompany.com
+    slack:
+      webhook-url: ${SLACK_WEBHOOK_URL}
+```
+ 
+### Running the Application
+ 
+**Development mode:**
+ 
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+```
+ 
+**Production mode:**
+ 
+```bash
+java -jar target/compliance-audit-platform-1.0.0.jar --spring.profiles.active=prod
+```
+ 
+The API will be available at: `http://localhost:8080`
+ 
+Swagger UI: `http://localhost:8080/swagger-ui.html`
+ 
+Actuator: `http://localhost:8080/actuator`
+ 
+---

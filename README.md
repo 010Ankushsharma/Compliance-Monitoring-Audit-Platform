@@ -51,4 +51,40 @@ The **Compliance Monitoring & Audit Platform** automates this entire lifecycle:
 4. **Audit** — maintain immutable, tamper-evident logs of all activity
 5. **Report** — generate compliance evidence reports for auditors and executives
 ---
+
+
+ ## ✨ Features
  
+### Core Compliance Engine
+- Policy definition with rule-based and threshold-based compliance checks
+- Support for multiple regulatory frameworks simultaneously
+- Custom control mapping and risk scoring
+- Evidence collection and attachment management
+### Audit Trail
+- Immutable event log with cryptographic hash chaining
+- Full request/response capture with user context
+- Data access auditing (who accessed what and when)
+- Configurable retention policies per data classification
+### Real-Time Monitoring
+- Event stream processing for instant violation detection
+- Configurable alert thresholds and escalation paths
+- Dashboard metrics with live compliance posture scoring
+- Scheduled compliance assessments
+### Alerting & Notifications
+- Multi-channel notifications (email, Slack, webhook, SMS)
+- Severity-based routing (INFO, WARNING, CRITICAL)
+- Alert deduplication and suppression rules
+- On-call escalation support
+### Reporting & Analytics
+- Pre-built report templates for ISO 27001, SOC 2, GDPR, HIPAA
+- Custom report builder with filters and date ranges
+- Exportable to PDF, Excel, and CSV
+- Executive dashboards with trend analysis
+### Security
+- JWT-based authentication with refresh token rotation
+- Role-based access control (RBAC) with fine-grained permissions
+- OAuth 2.0 / OIDC integration (SSO)
+- API rate limiting and IP allowlisting
+- Encrypted data at rest and in transit
+---
+

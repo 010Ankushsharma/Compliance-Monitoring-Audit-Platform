@@ -75,7 +75,7 @@ The **Compliance Monitoring & Audit Platform** automates this entire lifecycle:
 ### Alerting & Notifications
 - Multi-channel notifications (email, Slack, webhook, SMS)
 - Severity-based routing (INFO, WARNING, CRITICAL)
-- Alert deduplication and suppression rules
+- Alert deduplication and suppression rules   
 - On-call escalation support
 ### Reporting & Analytics
 - Pre-built report templates for ISO 27001, SOC 2, GDPR, HIPAA

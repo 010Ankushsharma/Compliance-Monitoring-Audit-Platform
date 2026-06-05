@@ -302,7 +302,7 @@ cp .env.example .env
 # Edit .env with your configuration values
 ```
  
-**3. Start infrastructure services with Docker Compose**
+**3. Start infrastructure services with Docker Compose**  
  
 ```bash
 docker-compose up -d postgres redis kafka zookeeper

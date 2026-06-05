@@ -61,7 +61,7 @@ The **Compliance Monitoring & Audit Platform** automates this entire lifecycle:
 - Policy definition with rule-based and threshold-based compliance checks
 - Support for multiple regulatory frameworks simultaneously
 - Custom control mapping and risk scoring
-- Evidence collection and attachment management
+- Evidence collection and attachment management   
 ### Audit Trail
 - Immutable event log with cryptographic hash chaining  
 - Full request/response capture with user context

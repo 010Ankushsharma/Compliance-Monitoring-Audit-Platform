@@ -123,7 +123,7 @@ The **Compliance Monitoring & Audit Platform** automates this entire lifecycle:
  
 The platform follows a **layered architecture** with clear separation between API, service, and persistence concerns:
  
-- **Controller Layer** — REST endpoints, request validation, response mapping
+- **Controller Layer** — REST endpoints, request validation, response mapping  
 - **Service Layer** — Business logic, orchestration, rule evaluation
 - **Repository Layer** — JPA/Hibernate data access with Spring Data
 - **Event Layer** — Kafka producers/consumers for async processing

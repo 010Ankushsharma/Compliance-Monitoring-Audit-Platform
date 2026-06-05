@@ -63,7 +63,7 @@ The **Compliance Monitoring & Audit Platform** automates this entire lifecycle:
 - Custom control mapping and risk scoring
 - Evidence collection and attachment management
 ### Audit Trail
-- Immutable event log with cryptographic hash chaining
+- Immutable event log with cryptographic hash chaining  
 - Full request/response capture with user context
 - Data access auditing (who accessed what and when)
 - Configurable retention policies per data classification

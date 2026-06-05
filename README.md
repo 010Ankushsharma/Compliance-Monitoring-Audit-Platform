@@ -98,7 +98,7 @@ The **Compliance Monitoring & Audit Platform** automates this entire lifecycle:
 └────────────────────────────┬──────────────────────────────────────┘
                              │ HTTPS / REST
 ┌────────────────────────────▼──────────────────────────────────────┐
-│                        API Gateway Layer                          │
+│                        API Gateway Layer                          │  
 │               (Spring Security + Rate Limiter + JWT)              │
 └──────┬──────────────┬───────────────┬───────────────┬─────────────┘
        │              │               │               │

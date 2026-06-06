@@ -13,7 +13,7 @@ A robust, enterprise-grade **Compliance Monitoring & Audit Platform** built with
 - [Overview](#-overview)
 - [Features](#-features)
 - [Architecture](#-architecture)
-- [Tech Stack](#-tech-stack)
+- [Tech Stack](#-tech-stack)  
 - [Project Structure](#-project-structure)
 - [Getting Started](#-getting-started)
   - [Prerequisites](#prerequisites)

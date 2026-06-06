@@ -73,7 +73,7 @@ The **Compliance Monitoring & Audit Platform** automates this entire lifecycle:
 - Dashboard metrics with live compliance posture scoring
 - Scheduled compliance assessments  
 ### Alerting & Notifications
-- Multi-channel notifications (email, Slack, webhook, SMS)
+- Multi-channel notifications (email, Slack, webhook, SMS)  
 - Severity-based routing (INFO, WARNING, CRITICAL)
 - Alert deduplication and suppression rules   
 - On-call escalation support

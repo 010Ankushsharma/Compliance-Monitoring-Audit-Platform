@@ -293,7 +293,7 @@ Ensure the following are installed on your machine:
  
 ```bash
 git clone https://github.com/your-org/compliance-audit-platform.git
-cd compliance-audit-platform
+cd compliance-audit-platform   
 ```
  
 **2. Copy the environment file**

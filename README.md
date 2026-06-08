@@ -149,7 +149,7 @@ The platform follows a **layered architecture** with clear separation between AP
 | Monitoring | Spring Actuator, Micrometer, Prometheus |
 | Logging | SLF4J + Logback, structured JSON logs |
  
----
+---    
 
 
 ## 📁 Project Structure

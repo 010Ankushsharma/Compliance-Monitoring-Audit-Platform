@@ -3,7 +3,7 @@
 [![Java](https://img.shields.io/badge/Java-17+-orange?style=flat-square&logo=openjdk)](https://openjdk.org/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
-[![Build](https://img.shields.io/badge/Build-Maven-red?style=flat-square&logo=apachemaven)](https://maven.apache.org/)
+[![Build](https://img.shields.io/badge/Build-Maven-red?style=flat-square&logo=apachemaven)](https://maven.apache.org/)  
 
         
 A robust, enterprise-grade **Compliance Monitoring & Audit Platform** built with Java Spring Boot. The platform enables organizations to define compliance policies, monitor system and user activities in real-time, generate audit trails, detect violations, and produce regulatory reports — all through a secure, scalable REST API.

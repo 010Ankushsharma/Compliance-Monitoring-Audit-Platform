@@ -193,7 +193,7 @@ compliance-audit-platform/
 │   │   │   │   │   ├── Policy.java
 │   │   │   │   │   ├── PolicyRule.java
 │   │   │   │   │   ├── AuditLog.java
-│   │   │   │   │   ├── ComplianceViolation.java
+│   │   │   │   │   ├── ComplianceViolation.java    
 │   │   │   │   │   ├── Alert.java
 │   │   │   │   │   ├── Report.java
 │   │   │   │   │   ├── User.java

@@ -168,7 +168,7 @@ compliance-audit-platform/
 │   │   │   │   ├── KafkaConfig.java
 │   │   │   │   ├── RedisConfig.java
 │   │   │   │   ├── SwaggerConfig.java
-│   │   │   │   └── AuditConfig.java
+│   │   │   │   └── AuditConfig.java    
 │   │   │   │
 │   │   │   ├── controller/                           # REST controllers
 │   │   │   │   ├── AuthController.java

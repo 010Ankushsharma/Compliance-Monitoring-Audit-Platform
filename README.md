@@ -310,7 +310,7 @@ docker-compose up -d postgres redis kafka zookeeper
 ```
  
 **4. Build the application**
- 
+    
 ```bash
 mvn clean install -DskipTests
 ```

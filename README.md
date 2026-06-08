@@ -71,7 +71,7 @@ The **Compliance Monitoring & Audit Platform** automates this entire lifecycle:
 ### Real-Time Monitoring
 - Event stream processing for instant violation detection
 - Configurable alert thresholds and escalation paths
-- Dashboard metrics with live compliance posture scoring
+- Dashboard metrics with live compliance posture scoring  
 - Scheduled compliance assessments  
 ### Alerting & Notifications
 - Multi-channel notifications (email, Slack, webhook, SMS)  

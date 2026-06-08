@@ -119,7 +119,7 @@ The **Compliance Monitoring & Audit Platform** automates this entire lifecycle:
 │  PostgreSQL │        │  Apache      │        │   Redis     │
 │  (Primary   │        │  Kafka       │        │  (Cache +   │
 │   Storage)  │        │  (Events)    │        │   Sessions) │
-└─────────────┘        └──────────────┘        └─────────────┘
+└─────────────┘        └──────────────┘        └─────────────┘  
 ```
  
 The platform follows a **layered architecture** with clear separation between API, service, and persistence concerns:

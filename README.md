@@ -321,7 +321,7 @@ Edit `src/main/resources/application.yml` or provide values through environment 
  
 ```yaml
 spring:
-  datasource:
+  datasource:   
     url: jdbc:postgresql://localhost:5432/compliance_db
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}

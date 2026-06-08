@@ -91,7 +91,7 @@ The **Compliance Monitoring & Audit Platform** automates this entire lifecycle:
 - Encrypted data at rest and in transit
 ---
 ## 🏗️ Architecture
- 
+   
 ```
 ┌───────────────────────────────────────────────────────────────────┐
 │                         Client Applications                       │

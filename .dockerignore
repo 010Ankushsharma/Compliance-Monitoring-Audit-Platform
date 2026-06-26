@@ -1,0 +1,21 @@
+# =============================================================
+#  .dockerignore — exclude unnecessary files from Docker build context
+#  File: .dockerignore
+# =============================================================
+target/
+.git/
+.github/
+.idea/
+*.iml
+*.class
+*.log
+*.md
+docs/
+k8s/
+monitoring/
+docker-compose*.yml
+.env
+.env.*
+!.env.example
+node_modules/
+*.DS_Store

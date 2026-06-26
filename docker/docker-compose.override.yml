@@ -1,0 +1,40 @@
+# =============================================================
+#  docker-compose.override.yml — Developer overrides
+#  File: docker-compose.override.yml
+#
+#  This file is automatically merged with docker-compose.yml
+#  by docker-compose. Commit to repo — safe for dev only.
+#  Production uses docker-compose.prod.yml separately.
+# =============================================================
+
+services:
+
+  app:
+    # Mount source for hot-reload when using Spring DevTools
+    environment:
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      SPRING_DEVTOOLS_LIVERELOAD_ENABLED: "true"
+      # Verbose SQL logging in override mode
+      LOGGING_LEVEL_ORG_HIBERNATE_SQL: DEBUG
+    # Extra port for remote debugger (JDWP)
+    ports:
+      - "5005:5005"
+    command: >
+      java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+           -XX:+UseContainerSupport
+           -XX:MaxRAMPercentage=75.0
+           org.springframework.boot.loader.launch.JarLauncher
+
+  postgres:
+    # Expose explain/analyze via pg_stat_statements in dev
+    command: >
+      postgres
+        -c shared_preload_libraries=pg_stat_statements
+        -c pg_stat_statements.track=all
+        -c log_min_duration_statement=500
+        -c log_statement=ddl
+
+  kafka:
+    environment:
+      # Lower retention in dev to free disk space
+      KAFKA_LOG_RETENTION_HOURS: 24

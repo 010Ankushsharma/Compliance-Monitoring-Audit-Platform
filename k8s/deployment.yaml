@@ -1,0 +1,182 @@
+# =============================================================
+#  Deployment — Compliance API application
+#  File: k8s/deployment.yaml
+#
+#  Production settings:
+#    - 3 replicas minimum (HA across AZs)
+#    - RollingUpdate with zero-downtime
+#    - Resource limits prevent noisy-neighbour issues
+#    - Liveness / Readiness / Startup probes
+#    - Pod anti-affinity spreads replicas across nodes
+#    - Security context — non-root, read-only rootfs
+# =============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:      compliance-app
+  namespace: compliance
+  labels:
+    app.kubernetes.io/name:      compliance-audit-platform
+    app.kubernetes.io/component: api
+    app.kubernetes.io/version:   "1.0.0"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: compliance-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge:       1    # allow 1 extra pod during rollout
+      maxUnavailable: 0    # zero-downtime — never remove a pod before a new one is ready
+
+  template:
+    metadata:
+      labels:
+        app:     compliance-app
+        version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port:   "8081"
+        prometheus.io/path:   "/actuator/prometheus"
+        # Force pod restart when ConfigMap changes
+        checksum/config: "{{ include (print $.Template.BasePath \"/configmap.yaml\") . | sha256sum }}"
+
+    spec:
+      serviceAccountName: compliance-service-account
+
+      # ── Pod anti-affinity — spread across nodes ───────────
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: compliance-app
+                topologyKey: kubernetes.io/hostname
+          # Prefer different AZs for HA
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: compliance-app
+              topologyKey: topology.kubernetes.io/zone
+              namespaces:
+                - compliance
+
+      # ── Init container — wait for DB readiness ─────────────
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z ${DB_HOST} ${DB_PORT}; do
+                echo "Waiting for PostgreSQL at ${DB_HOST}:${DB_PORT}..."
+                sleep 3
+              done
+              echo "PostgreSQL is ready"
+          envFrom:
+            - configMapRef:
+                name: compliance-config
+          resources:
+            requests: { memory: "16Mi", cpu: "10m" }
+            limits:   { memory: "32Mi", cpu: "50m" }
+
+      # ── Main container ────────────────────────────────────
+      containers:
+        - name: compliance-app
+          image: compliance-audit-platform:1.0.0
+          imagePullPolicy: Always
+
+          ports:
+            - name:          http
+              containerPort: 8080
+              protocol:      TCP
+            - name:          management
+              containerPort: 8081
+              protocol:      TCP
+
+          # ── Environment — ConfigMap ──────────────────────
+          envFrom:
+            - configMapRef:
+                name: compliance-config
+            - secretRef:
+                name: compliance-secrets
+
+          # ── Resource requests & limits ───────────────────
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu:    "250m"
+            limits:
+              memory: "1Gi"
+              cpu:    "1000m"
+
+          # ── Startup probe — allow 3 minutes to boot ──────
+          startupProbe:
+            httpGet:
+              path:   /actuator/health/liveness
+              port:   8081
+            failureThreshold: 18   # 18 × 10s = 3 minutes
+            periodSeconds:    10
+
+          # ── Liveness probe — restart if deadlocked ───────
+          livenessProbe:
+            httpGet:
+              path:   /actuator/health/liveness
+              port:   8081
+            initialDelaySeconds: 0    # startupProbe takes over first
+            periodSeconds:       30
+            timeoutSeconds:      5
+            failureThreshold:    3
+            successThreshold:    1
+
+          # ── Readiness probe — remove from LB if not ready ─
+          readinessProbe:
+            httpGet:
+              path:   /actuator/health/readiness
+              port:   8081
+            initialDelaySeconds: 0
+            periodSeconds:       10
+            timeoutSeconds:      5
+            failureThreshold:    3
+            successThreshold:    1
+
+          # ── Security context ─────────────────────────────
+          securityContext:
+            runAsNonRoot:             true
+            runAsUser:                1001
+            runAsGroup:               1001
+            readOnlyRootFilesystem:   true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+
+          # ── Volume mounts ────────────────────────────────
+          volumeMounts:
+            - name:      reports-storage
+              mountPath: /data/compliance-reports
+            - name:      tmp-dir
+              mountPath: /tmp            # writable temp (required by Spring Boot)
+            - name:      app-logs
+              mountPath: /app/logs
+
+      # ── Volumes ───────────────────────────────────────────
+      volumes:
+        - name: reports-storage
+          persistentVolumeClaim:
+            claimName: compliance-reports-pvc
+        - name: tmp-dir
+          emptyDir: {}
+        - name: app-logs
+          emptyDir: {}
+
+      # ── Termination grace ─────────────────────────────────
+      # Allows in-flight requests + Kafka consumers to drain
+      terminationGracePeriodSeconds: 60
+
+      # ── Image pull secrets (if private registry) ──────────
+      # imagePullSecrets:
+      #   - name: registry-credentials

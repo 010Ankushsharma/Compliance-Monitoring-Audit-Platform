@@ -1,0 +1,55 @@
+# =============================================================
+#  RBAC — ServiceAccount, Role, RoleBinding
+#  File: k8s/rbac.yaml
+#
+#  The app pod needs NO K8s API permissions for normal operation.
+#  Minimal service account with no cluster-wide permissions.
+# =============================================================
+
+# ── ServiceAccount ────────────────────────────────────────────
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name:      compliance-service-account
+  namespace: compliance
+  labels:
+    app.kubernetes.io/name:      compliance-audit-platform
+    app.kubernetes.io/component: rbac
+  annotations:
+    # For AWS IRSA (IAM Roles for Service Accounts):
+    # eks.amazonaws.com/role-arn: arn:aws:iam::123456789:role/compliance-platform-role
+automountServiceAccountToken: false   # explicit opt-out — app doesn't need K8s API access
+
+---
+# ── Role — only what's needed for readiness/liveness pod lookups ──
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name:      compliance-role
+  namespace: compliance
+  labels:
+    app.kubernetes.io/name:      compliance-audit-platform
+    app.kubernetes.io/component: rbac
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs:     ["get", "list"]    # Needed for leader election if added later
+
+---
+# ── RoleBinding ───────────────────────────────────────────────
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name:      compliance-role-binding
+  namespace: compliance
+  labels:
+    app.kubernetes.io/name:      compliance-audit-platform
+    app.kubernetes.io/component: rbac
+subjects:
+  - kind:      ServiceAccount
+    name:      compliance-service-account
+    namespace: compliance
+roleRef:
+  kind:     Role
+  name:     compliance-role
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,168 @@
+# =============================================================
+#  application-prod.yml — Production profile overrides
+#  Start with: java -jar app.jar --spring.profiles.active=prod
+#  All secrets MUST come from environment variables or a secrets manager.
+#  NO hardcoded credentials anywhere in this file.
+# =============================================================
+
+spring:
+
+  # ── DataSource ─────────────────────────────────────────────
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT:5432}/${DB_NAME}?sslmode=require&ssl=true
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      pool-name: HikariPool-Prod
+      maximum-pool-size: 30
+      minimum-idle: 10
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 900000                     # 15 min — stay under Aurora proxy timeout
+      leak-detection-threshold: 30000
+      connection-test-query: SELECT 1
+      data-source-properties:
+        ssl: true
+        sslmode: require
+
+  # ── JPA ────────────────────────────────────────────────────
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        generate_statistics: false
+
+  # ── Redis ──────────────────────────────────────────────────
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      ssl:
+        enabled: true
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 30
+          max-idle: 10
+          min-idle: 5
+          max-wait: 2000ms
+
+  # ── Kafka ──────────────────────────────────────────────────
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    security:
+      protocol: SASL_SSL
+    properties:
+      sasl.mechanism: PLAIN
+      sasl.jaas.config: >
+        org.apache.kafka.common.security.plain.PlainLoginModule required
+        username="${KAFKA_USERNAME}"
+        password="${KAFKA_PASSWORD}";
+      ssl.endpoint.identification.algorithm: https
+    consumer:
+      properties:
+        session.timeout.ms: 30000
+        heartbeat.interval.ms: 10000
+    producer:
+      properties:
+        compression.type: lz4
+        batch.size: 65536
+        linger.ms: 5
+
+  # ── Mail ────────────────────────────────────────────────────
+  mail:
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.ssl.checkserveridentity: true
+
+# ── Server hardening ────────────────────────────────────────
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-exception: false
+    include-binding-errors: never
+
+# ── Actuator — minimal public surface in prod ────────────────
+management:
+  server:
+    port: ${MANAGEMENT_PORT:8081}
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,loggers,flyway
+  endpoint:
+    health:
+      show-details: when-authorized
+      show-components: when-authorized
+  tracing:
+    sampling:
+      probability: ${TRACE_SAMPLING_PROBABILITY:0.05}   # 5% in prod
+
+# ── Application overrides ────────────────────────────────────
+app:
+
+  jwt:
+    secret: ${JWT_SECRET}                      # min 512-bit in prod; rotate regularly
+    expiration-ms: ${JWT_EXPIRATION_MS:3600000}
+    refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
+
+  audit:
+    retention-days: ${AUDIT_RETENTION_DAYS:730}   # 2 years in prod
+    async-enabled: true
+    chain-verification-enabled: true
+
+  rate-limit:
+    enabled: true
+    requests-per-minute: ${RATE_LIMIT_RPM:60}
+    burst-capacity: ${RATE_LIMIT_BURST:15}
+
+  notifications:
+    email:
+      enabled: true
+      from: ${NOTIFICATION_FROM_EMAIL}
+    slack:
+      enabled: true
+      webhook-url: ${SLACK_WEBHOOK_URL}
+
+  kafka:
+    partitions: 6
+    replication-factor: 3                      # 3 replicas for HA
+
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}   # e.g. https://app.company.com
+
+  security:
+    ip-allowlist-enabled: ${IP_ALLOWLIST_ENABLED:false}
+    allowed-ips: ${ALLOWED_IPS:}
+
+  reports:
+    storage-path: ${REPORTS_STORAGE_PATH:/data/compliance-reports}
+    async-generation: true
+    max-concurrent-jobs: 10
+    cleanup-days: 180
+
+# ── Logging — structured JSON for log aggregation (ELK / CloudWatch) ──
+logging:
+  level:
+    root: ${LOG_LEVEL:WARN}
+    com.company.compliance: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+    org.springframework.kafka: WARN
+    org.flywaydb: INFO
+  pattern:
+    # JSON structured logging for ELK / CloudWatch ingestion
+    console: >
+      {"timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ}","level":"%level","service":"compliance-audit-platform",
+      "traceId":"%X{traceId}","spanId":"%X{spanId}","thread":"%thread",
+      "logger":"%logger{40}","message":"%message","exception":"%xException{10}"}%n

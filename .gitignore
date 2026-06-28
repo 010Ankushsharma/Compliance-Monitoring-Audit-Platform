@@ -1,0 +1,53 @@
+# =============================================================
+#  .gitignore — Compliance Monitoring & Audit Platform
+#  File: .gitignore
+# =============================================================
+
+# ── Secrets — NEVER commit ─────────────────────────────────
+.env
+.env.local
+.env.prod
+*.pem
+*.key
+*.p12
+*.jks
+
+# ── Maven ──────────────────────────────────────────────────
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ── IDE ────────────────────────────────────────────────────
+.idea/
+*.iml
+*.iws
+.classpath
+.project
+.settings/
+*.swp
+*.swo
+.vscode/
+*.code-workspace
+
+# ── OS ─────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Docker ─────────────────────────────────────────────────
+docker-compose.override.yml.local
+
+# ── Reports (generated at runtime) ─────────────────────────
+/tmp/compliance-reports/
+/data/compliance-reports/
+
+# ── Test / Coverage ────────────────────────────────────────
+*.class
+*.log
+target/surefire-reports/
+target/failsafe-reports/
+target/site/
+
+# ── OWASP scan cache ────────────────────────────────────────
+dependency-check-data/

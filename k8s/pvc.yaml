@@ -1,0 +1,28 @@
+# =============================================================
+#  PersistentVolumeClaim — report file storage
+#  File: k8s/pvc.yaml
+#
+#  In production, use a cloud-native StorageClass:
+#    AWS:   gp3 (EBS) or efs-sc (EFS — multi-AZ ReadWriteMany)
+#    GCP:   standard-rwo or filestore
+#    Azure: managed-premium
+#
+#  For multi-pod access (3 replicas all writing reports),
+#  use ReadWriteMany with EFS / NFS / CephFS, OR route all
+#  report writes through a single service and use S3 instead.
+# =============================================================
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name:      compliance-reports-pvc
+  namespace: compliance
+  labels:
+    app.kubernetes.io/name:      compliance-audit-platform
+    app.kubernetes.io/component: storage
+spec:
+  accessModes:
+    - ReadWriteMany        # shared across 3 replicas
+  storageClassName: efs-sc # Replace with your cluster's StorageClass
+  resources:
+    requests:
+      storage: 20Gi

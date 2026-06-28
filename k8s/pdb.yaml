@@ -1,0 +1,20 @@
+# =============================================================
+#  PodDisruptionBudget — guarantee availability during node drains
+#  File: k8s/pdb.yaml
+#
+#  Ensures at least 2 pods remain available during voluntary
+#  disruptions (node maintenance, cluster upgrades, evictions).
+# =============================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name:      compliance-pdb
+  namespace: compliance
+  labels:
+    app.kubernetes.io/name:      compliance-audit-platform
+    app.kubernetes.io/component: availability
+spec:
+  minAvailable: 2        # at least 2 pods always running
+  selector:
+    matchLabels:
+      app: compliance-app

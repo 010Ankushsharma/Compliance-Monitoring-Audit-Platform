@@ -1,0 +1,12 @@
+# =============================================================
+#  Namespace
+#  File: k8s/namespace.yaml
+# =============================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: compliance
+  labels:
+    app.kubernetes.io/name:       compliance-audit-platform
+    app.kubernetes.io/managed-by: kubectl
+    environment:                  production

@@ -1,0 +1,74 @@
+# =============================================================
+#  Ingress — TLS termination and routing
+#  File: k8s/ingress.yaml
+#
+#  Uses NGINX Ingress Controller + cert-manager (Let's Encrypt).
+#  For AWS ALB Ingress Controller replace annotations accordingly.
+# =============================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name:      compliance-ingress
+  namespace: compliance
+  labels:
+    app.kubernetes.io/name:      compliance-audit-platform
+    app.kubernetes.io/component: ingress
+  annotations:
+    # ── NGINX annotations ──────────────────────────────────
+    kubernetes.io/ingress.class:                    nginx
+    nginx.ingress.kubernetes.io/ssl-redirect:        "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect:  "true"
+
+    # Request / response size
+    nginx.ingress.kubernetes.io/proxy-body-size:     "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout:  "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout:  "120"
+
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+
+    # Rate limiting at ingress level (backup to app-level Bucket4j)
+    nginx.ingress.kubernetes.io/limit-rps:           "30"
+    nginx.ingress.kubernetes.io/limit-connections:   "20"
+
+    # cert-manager: auto-issue Let's Encrypt certificate
+    cert-manager.io/cluster-issuer:                  letsencrypt-prod
+
+spec:
+  tls:
+    - hosts:
+        - compliance-api.company.com
+      secretName: compliance-tls-cert
+
+  rules:
+    - host: compliance-api.company.com
+      http:
+        paths:
+          # ── Public: API
+          - path:     /api/
+            pathType: Prefix
+            backend:
+              service:
+                name: compliance-service
+                port:
+                  name: http
+
+          # ── Public: OpenAPI docs (restrict in prod if needed)
+          - path:     /api-docs
+            pathType: Prefix
+            backend:
+              service:
+                name: compliance-service
+                port:
+                  name: http
+
+          - path:     /swagger-ui
+            pathType: Prefix
+            backend:
+              service:
+                name: compliance-service
+                port:
+                  name: http

@@ -1,0 +1,57 @@
+# =============================================================
+#  ConfigMap — non-sensitive application configuration
+#  File: k8s/configmap.yaml
+#
+#  Sensitive values (JWT_SECRET, DB_PASSWORD, etc.) live in
+#  k8s/secret.yaml — never in ConfigMap.
+# =============================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name:      compliance-config
+  namespace: compliance
+  labels:
+    app.kubernetes.io/name:      compliance-audit-platform
+    app.kubernetes.io/component: config
+data:
+  SPRING_PROFILES_ACTIVE:      "prod"
+  SERVER_PORT:                  "8080"
+  MANAGEMENT_PORT:              "8081"
+  LOG_LEVEL:                    "INFO"
+
+  # ── Database ────────────────────────────────────────────────
+  DB_HOST:                      "postgres-service"
+  DB_PORT:                      "5432"
+  DB_NAME:                      "compliance_db"
+
+  # ── Redis ───────────────────────────────────────────────────
+  REDIS_HOST:                   "redis-service"
+  REDIS_PORT:                   "6379"
+
+  # ── Kafka ───────────────────────────────────────────────────
+  KAFKA_BOOTSTRAP_SERVERS:      "kafka-service:9092"
+
+  # ── SMTP ────────────────────────────────────────────────────
+  SMTP_HOST:                    "smtp.company.com"
+  SMTP_PORT:                    "587"
+  EMAIL_NOTIFICATIONS_ENABLED:  "true"
+  NOTIFICATION_FROM_EMAIL:      "noreply@company.com"
+  SLACK_NOTIFICATIONS_ENABLED:  "true"
+
+  # ── Reports ─────────────────────────────────────────────────
+  REPORTS_STORAGE_PATH:         "/data/compliance-reports"
+
+  # ── JWT (non-secret fields) ──────────────────────────────────
+  JWT_EXPIRATION_MS:            "3600000"
+  JWT_REFRESH_EXPIRATION_MS:    "604800000"
+
+  # ── Rate limiting ────────────────────────────────────────────
+  RATE_LIMIT_ENABLED:           "true"
+  RATE_LIMIT_RPM:               "60"
+  RATE_LIMIT_BURST:             "15"
+
+  # ── Tracing ─────────────────────────────────────────────────
+  TRACE_SAMPLING_PROBABILITY:   "0.05"
+
+  # ── Audit ───────────────────────────────────────────────────
+  AUDIT_RETENTION_DAYS:         "730"

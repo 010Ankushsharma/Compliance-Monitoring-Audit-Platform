@@ -1,0 +1,25 @@
+# Test profile configuration
+spring:
+  profiles:
+    active: test
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: create-drop
+  flyway:
+    enabled: false       # Testcontainers manages schema in integration tests
+
+app:
+  jwt:
+    secret: "test-secret-key-minimum-256-bits-long-for-unit-testing-only-do-not-use-in-prod"
+    expiration-ms: 86400000
+    refresh-expiration-ms: 604800000
+  audit:
+    async-enabled: false
+  rate-limit:
+    enabled: false
+
+logging:
+  level:
+    root: WARN
+    com.company.compliance: DEBUG

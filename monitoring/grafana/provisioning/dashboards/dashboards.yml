@@ -1,0 +1,11 @@
+# File: monitoring/grafana/provisioning/dashboards/dashboards.yml
+apiVersion: 1
+providers:
+  - name:            Compliance Platform
+    orgId:           1
+    folder:          Compliance
+    type:            file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards

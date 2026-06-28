@@ -1,0 +1,353 @@
+# =============================================================
+#  CI Pipeline — Build, Test, Scan, Push
+#  File: .github/workflows/ci.yml
+#
+#  Triggers:
+#    - Push to main / develop
+#    - Pull request to main / develop
+#    - Manual dispatch (workflow_dispatch)
+#
+#  Jobs:
+#    1. validate      — Maven validate + code style (Spotless)
+#    2. test          — Unit tests + JaCoCo coverage (≥80%)
+#    3. integration   — Integration tests (Testcontainers)
+#    4. security-scan — OWASP dependency check + Trivy image scan
+#    5. build-push    — Docker build + push to registry (main only)
+# =============================================================
+
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+    inputs:
+      skip_tests:
+        description: "Skip tests (emergency build only)"
+        required: false
+        default: "false"
+        type: boolean
+
+# Cancel in-progress runs on the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION:   "17"
+  REGISTRY:       ghcr.io
+  IMAGE_NAME:     ${{ github.repository_owner }}/compliance-audit-platform
+
+jobs:
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 1: Validate — fast fail on style / POM issues
+  # ─────────────────────────────────────────────────────────────
+  validate:
+    name: Validate & Style Check
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version:     ${{ env.JAVA_VERSION }}
+          distribution:     temurin
+          cache:            maven
+
+      - name: Validate POM and enforce versions
+        run: ./mvnw validate enforcer:enforce -B --no-transfer-progress -q
+
+      - name: Check code style (Spotless / Google Java Format)
+        run: ./mvnw spotless:check -B --no-transfer-progress
+
+      - name: Check for dependency conflicts
+        run: ./mvnw dependency:tree -B --no-transfer-progress -q
+
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 2: Unit Tests + Coverage
+  # ─────────────────────────────────────────────────────────────
+  test:
+    name: Unit Tests (JaCoCo ≥ 80%)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    needs: validate
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version:  ${{ env.JAVA_VERSION }}
+          distribution:  temurin
+          cache:         maven
+
+      - name: Run unit tests
+        run: |
+          ./mvnw test \
+            -B --no-transfer-progress \
+            -Dsurefire.failIfNoSpecifiedTests=false \
+            -Dmaven.test.failure.ignore=false
+        env:
+          JWT_SECRET: "test-secret-key-minimum-256-bits-long-for-ci-pipeline-only"
+
+      - name: Verify coverage thresholds (line ≥80%, branch ≥75%)
+        run: ./mvnw jacoco:check -B --no-transfer-progress
+
+      - name: Upload JaCoCo HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+          retention-days: 7
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name:    Unit Test Results
+          path:    target/surefire-reports/*.xml
+          reporter: java-junit
+          fail-on-error: true
+
+      - name: Upload coverage to Codecov (optional)
+        uses: codecov/codecov-action@v4
+        if: github.event_name != 'pull_request'
+        with:
+          files: target/site/jacoco/jacoco.xml
+          flags: unit-tests
+          fail_ci_if_error: false
+
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 3: Integration Tests (Testcontainers — real PG + Kafka)
+  # ─────────────────────────────────────────────────────────────
+  integration-test:
+    name: Integration Tests (Testcontainers)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    needs: validate
+    if: ${{ inputs.skip_tests != 'true' }}
+
+    services:
+      # Docker-in-Docker is needed for Testcontainers
+      # (ubuntu-22.04 runners already have Docker installed)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version:  ${{ env.JAVA_VERSION }}
+          distribution:  temurin
+          cache:         maven
+
+      - name: Run integration tests
+        run: |
+          ./mvnw verify \
+            -Pci \
+            -B --no-transfer-progress \
+            -Dfailsafe.failIfNoSpecifiedTests=false \
+            -Dgroups=integration
+        env:
+          JWT_SECRET:           "test-secret-key-minimum-256-bits-long-for-ci-pipeline-only"
+          TESTCONTAINERS_RYUK_DISABLED: "false"
+          DOCKER_HOST:          "unix:///var/run/docker.sock"
+
+      - name: Publish integration test results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name:     Integration Test Results
+          path:     target/failsafe-reports/*.xml
+          reporter: java-junit
+          fail-on-error: true
+
+      - name: Upload integration test logs
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name:            integration-test-logs
+          path:            target/failsafe-reports/
+          retention-days:  3
+
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 4: Security Scan
+  # ─────────────────────────────────────────────────────────────
+  security-scan:
+    name: Security Scan (OWASP + Trivy)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    needs: validate
+    # Only run on push to main/develop — PRs run tests, not full scan
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version:  ${{ env.JAVA_VERSION }}
+          distribution:  temurin
+          cache:         maven
+
+      - name: OWASP Dependency Check (fail on CVSS ≥ 7)
+        run: |
+          ./mvnw dependency-check:check \
+            -Pci \
+            -B --no-transfer-progress \
+            -DfailBuildOnCVSS=7 \
+            -DsuppressionFile=owasp-suppressions.xml
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}  # optional — avoids rate limits
+
+      - name: Upload OWASP report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name:            owasp-dependency-report
+          path:            target/dependency-check-report.*
+          retention-days:  14
+
+      - name: Build image for Trivy scan
+        run: |
+          docker build \
+            --target runtime \
+            -t compliance-audit-platform:scan \
+            .
+
+      - name: Run Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref:      "compliance-audit-platform:scan"
+          format:         "sarif"
+          output:         "trivy-results.sarif"
+          severity:       "CRITICAL,HIGH"
+          exit-code:      "1"          # fail build on critical/high CVEs
+          ignore-unfixed: true
+
+      - name: Upload Trivy SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+
+      - name: Run Trivy filesystem scan (secrets detection)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type:  "fs"
+          scan-ref:   "."
+          scanners:   "secret"
+          exit-code:  "1"
+          format:     "table"
+
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 5: Build & Push Docker Image
+  # ─────────────────────────────────────────────────────────────
+  build-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    needs: [test, integration-test, security-scan]
+    # Only push images from main branch
+    if: |
+      github.ref == 'refs/heads/main' &&
+      github.event_name != 'pull_request'
+
+    permissions:
+      contents:  read
+      packages:  write     # required to push to GHCR
+
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-tag:    ${{ steps.meta.outputs.tags }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version:  ${{ env.JAVA_VERSION }}
+          distribution:  temurin
+          cache:         maven
+
+      - name: Build JAR (skip tests — already ran)
+        run: ./mvnw package -DskipTests -B --no-transfer-progress -q
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata (tags + labels)
+        id:   meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # SHA tag: ghcr.io/org/app:sha-abc1234
+            type=sha,prefix=sha-,format=short
+            # Branch tag: ghcr.io/org/app:main
+            type=ref,event=branch
+            # Semver tag: ghcr.io/org/app:1.2.3 (from git tag v1.2.3)
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            # Latest only on main
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build and push multi-platform image
+        id:   build
+        uses: docker/build-push-action@v5
+        with:
+          context:       .
+          file:          ./Dockerfile
+          target:        runtime
+          push:          true
+          tags:          ${{ steps.meta.outputs.tags }}
+          labels:        ${{ steps.meta.outputs.labels }}
+          platforms:     linux/amd64,linux/arm64    # multi-arch for ARM (Graviton, M-series)
+          cache-from:    type=gha
+          cache-to:      type=gha,mode=max
+          provenance:    true    # SLSA provenance attestation
+          sbom:          true    # Software Bill of Materials
+
+      - name: Output image digest
+        run: echo "Image pushed with digest ${{ steps.build.outputs.digest }}"
+
+      - name: Create GitHub deployment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deployment = await github.rest.repos.createDeployment({
+              owner:       context.repo.owner,
+              repo:        context.repo.repo,
+              ref:         context.sha,
+              environment: 'production',
+              description: `Image: ${{ steps.build.outputs.digest }}`,
+              auto_merge:  false,
+              required_contexts: []
+            });
+            core.setOutput('deployment_id', deployment.data.id);

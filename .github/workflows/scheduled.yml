@@ -1,0 +1,80 @@
+# =============================================================
+#  Scheduled Jobs — nightly maintenance tasks
+#  File: .github/workflows/scheduled.yml
+# =============================================================
+
+name: Scheduled Maintenance
+
+on:
+  schedule:
+    - cron: "0 2 * * *"    # 02:00 UTC daily
+  workflow_dispatch:
+
+jobs:
+
+  # Nightly full dependency vulnerability scan
+  nightly-security-scan:
+    name: Nightly Dependency Scan
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: temurin
+          cache:        maven
+
+      - name: OWASP Dependency Check
+        run: |
+          ./mvnw dependency-check:check \
+            -Pci \
+            -B --no-transfer-progress \
+            -DfailBuildOnCVSS=9    # only fail on critical in nightly
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        continue-on-error: true   # report but don't block on nightly
+
+      - name: Upload OWASP report
+        uses: actions/upload-artifact@v4
+        with:
+          name:            nightly-owasp-report-${{ github.run_number }}
+          path:            target/dependency-check-report.html
+          retention-days:  30
+
+      - name: Notify on new critical CVEs
+        if: failure()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            { "text": "🚨 *New CVEs detected* in Compliance Platform dependencies — check OWASP report in GitHub Actions artifacts." }
+        env:
+          SLACK_WEBHOOK_URL:  ${{ secrets.SLACK_DEPLOY_WEBHOOK }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+  # Check for outdated dependencies
+  dependency-updates:
+    name: Check Outdated Dependencies
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: temurin
+          cache:        maven
+
+      - name: Check for newer dependency versions
+        run: |
+          ./mvnw versions:display-dependency-updates \
+            -B --no-transfer-progress \
+            > /tmp/dependency-updates.txt 2>&1 || true
+          cat /tmp/dependency-updates.txt
+
+      - name: Upload dependency update report
+        uses: actions/upload-artifact@v4
+        with:
+          name:           dependency-updates-${{ github.run_number }}
+          path:           /tmp/dependency-updates.txt
+          retention-days: 7

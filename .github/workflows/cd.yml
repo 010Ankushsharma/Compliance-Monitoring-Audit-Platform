@@ -1,0 +1,258 @@
+# =============================================================
+#  CD Pipeline — Deploy to Kubernetes
+#  File: .github/workflows/cd.yml
+#
+#  Triggers:
+#    - Successful completion of ci.yml on main
+#    - Manual dispatch with environment selection
+#
+#  Environments:
+#    staging    — auto-deploy on every main push
+#    production — requires manual approval gate
+# =============================================================
+
+name: CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types:     [completed]
+    branches:  [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required:    true
+        default:     "staging"
+        type:        choice
+        options:     [staging, production]
+      image_tag:
+        description: "Docker image tag to deploy (default: latest)"
+        required:    false
+        default:     "latest"
+
+env:
+  REGISTRY:   ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/compliance-audit-platform
+
+jobs:
+
+  # ─────────────────────────────────────────────────────────────
+  # Guard — only proceed if CI passed
+  # ─────────────────────────────────────────────────────────────
+  guard:
+    name: Verify CI Passed
+    runs-on: ubuntu-22.04
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    outputs:
+      should_deploy: ${{ steps.check.outputs.result }}
+    steps:
+      - name: Check CI status
+        id:   check
+        run: echo "result=true" >> $GITHUB_OUTPUT
+
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 1: Deploy to Staging (auto — no approval needed)
+  # ─────────────────────────────────────────────────────────────
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    needs: guard
+    environment:
+      name: staging
+      url:  https://compliance-api-staging.company.com
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve image tag
+        id: tag
+        run: |
+          TAG="${{ inputs.image_tag || 'sha-' }}${{ github.event.workflow_run.head_sha && github.event.workflow_run.head_sha || github.sha }}"
+          # Truncate SHA to 7 chars to match docker/metadata-action short SHA format
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "tag=sha-${SHORT_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume:    ${{ secrets.AWS_ROLE_ARN_STAGING }}
+          aws-region:        ${{ secrets.AWS_REGION }}
+          role-session-name: GitHubActions-Staging
+
+      - name: Update kubeconfig for staging cluster
+        run: |
+          aws eks update-kubeconfig \
+            --name ${{ secrets.EKS_CLUSTER_NAME_STAGING }} \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Set image tag in kustomization
+        run: |
+          cd k8s
+          kubectl kustomize . | \
+            sed "s|compliance-audit-platform:.*|${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }}|g" \
+            > /tmp/manifests-staging.yaml
+
+      - name: Deploy to staging namespace
+        run: |
+          kubectl apply -f /tmp/manifests-staging.yaml -n compliance-staging
+          kubectl rollout status deployment/compliance-app \
+            -n compliance-staging \
+            --timeout=300s
+
+      - name: Run smoke tests against staging
+        run: |
+          STAGING_URL="https://compliance-api-staging.company.com"
+          echo "Running smoke tests against $STAGING_URL"
+
+          # Health check
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "$STAGING_URL/actuator/health/readiness")
+          [ "$STATUS" = "200" ] || (echo "Health check failed: $STATUS" && exit 1)
+
+          # Unauthenticated endpoint should return 401 (not 500)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "$STAGING_URL/api/v1/policies")
+          [ "$STATUS" = "401" ] || (echo "Auth check failed: $STATUS" && exit 1)
+
+          echo "Smoke tests passed"
+
+      - name: Notify Slack on staging deploy
+        if: always()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "${{ job.status == 'success' && '✅' || '❌' }} *Staging deploy ${{ job.status }}*",
+              "attachments": [{
+                "color": "${{ job.status == 'success' && 'good' || 'danger' }}",
+                "fields": [
+                  { "title": "Image",  "value": "${{ steps.tag.outputs.tag }}", "short": true },
+                  { "title": "Commit", "value": "${{ github.sha }}",            "short": true }
+                ]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL:  ${{ secrets.SLACK_DEPLOY_WEBHOOK }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+
+  # ─────────────────────────────────────────────────────────────
+  # Job 2: Deploy to Production (requires manual approval)
+  # ─────────────────────────────────────────────────────────────
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    needs: deploy-staging
+    # environment.production has a required_reviewers gate in GitHub
+    environment:
+      name: production
+      url:  https://compliance-api.company.com
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve image tag
+        id: tag
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "tag=sha-${SHORT_SHA}" >> $GITHUB_OUTPUT
+
+      - name: Configure AWS credentials (production)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume:    ${{ secrets.AWS_ROLE_ARN_PROD }}
+          aws-region:        ${{ secrets.AWS_REGION }}
+          role-session-name: GitHubActions-Production
+
+      - name: Update kubeconfig for production cluster
+        run: |
+          aws eks update-kubeconfig \
+            --name ${{ secrets.EKS_CLUSTER_NAME_PROD }} \
+            --region ${{ secrets.AWS_REGION }}
+
+      - name: Prepare production manifests
+        run: |
+          cd k8s
+          kubectl kustomize . | \
+            sed "s|compliance-audit-platform:.*|${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }}|g" \
+            > /tmp/manifests-prod.yaml
+
+      - name: Validate manifests before apply (dry-run)
+        run: |
+          kubectl apply -f /tmp/manifests-prod.yaml \
+            -n compliance \
+            --dry-run=server
+
+      - name: Deploy to production
+        run: |
+          kubectl apply -f /tmp/manifests-prod.yaml -n compliance
+          kubectl rollout status deployment/compliance-app \
+            -n compliance \
+            --timeout=600s    # 10 min for prod (3 replicas rolling)
+
+      - name: Verify pod health post-deploy
+        run: |
+          kubectl wait pod \
+            -l app=compliance-app \
+            -n compliance \
+            --for=condition=Ready \
+            --timeout=120s
+
+          READY=$(kubectl get deployment compliance-app \
+            -n compliance \
+            -o jsonpath='{.status.readyReplicas}')
+          echo "Ready replicas: $READY"
+          [ "$READY" -ge "3" ] || (echo "Not enough ready replicas" && exit 1)
+
+      - name: Create GitHub release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.repos.createRelease({
+              owner:      context.repo.owner,
+              repo:       context.repo.repo,
+              tag_name:   `v${{ github.run_number }}`,
+              name:       `Release ${{ github.run_number }}`,
+              body:       `Deployed commit ${{ github.sha }} to production.\nImage: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.tag }}`,
+              draft:      false,
+              prerelease: false
+            });
+
+      - name: Notify Slack on production deploy
+        if: always()
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "${{ job.status == 'success' && '🚀' || '🔥' }} *Production deploy ${{ job.status }}*",
+              "attachments": [{
+                "color": "${{ job.status == 'success' && 'good' || 'danger' }}",
+                "fields": [
+                  { "title": "Image",  "value": "${{ steps.tag.outputs.tag }}", "short": true },
+                  { "title": "Commit", "value": "${{ github.sha }}",            "short": true },
+                  { "title": "Actor",  "value": "${{ github.actor }}",          "short": true }
+                ]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL:  ${{ secrets.SLACK_DEPLOY_WEBHOOK }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+      # ── Rollback on failure ───────────────────────────────────
+      - name: Rollback production on failure
+        if: failure()
+        run: |
+          echo "Deploy failed — rolling back to previous revision"
+          kubectl rollout undo deployment/compliance-app -n compliance
+          kubectl rollout status deployment/compliance-app \
+            -n compliance \
+            --timeout=300s
+          echo "Rollback complete"

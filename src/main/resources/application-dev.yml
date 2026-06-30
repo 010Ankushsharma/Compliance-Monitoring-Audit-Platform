@@ -43,11 +43,9 @@ spring:
           max-wait: 1000ms
 
   # ── Kafka ──────────────────────────────────────────────────
+# ── Kafka ──────────────────────────────────────────────────
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-    producer:
-      properties:
-        transactional.id:                       # disable transactions in dev for simplicity
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}                      # disable transactions in dev for simplicity
 
   # ── Mail (MailHog in dev) ───────────────────────────────────
   mail:

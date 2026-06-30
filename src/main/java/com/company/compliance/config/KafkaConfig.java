@@ -106,23 +106,31 @@ public class KafkaConfig {
     // ── Producer factory ──────────────────────────────────────────
 
     @Bean
-    public ProducerFactory<String, Object> producerFactory() {
-        Map<String, Object> configs = new HashMap<>(
-                kafkaProperties.buildProducerProperties(null));
+     public ProducerFactory<String, Object> producerFactory() {
+    Map<String, Object> configs = new HashMap<>(
+            kafkaProperties.buildProducerProperties(null));
 
-        configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,   StringSerializer.class);
-        configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        configs.put(ProducerConfig.ACKS_CONFIG,                   "all");
-        configs.put(ProducerConfig.RETRIES_CONFIG,                3);
-        configs.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG,     true);
-        configs.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 1);
-        configs.put(JsonSerializer.ADD_TYPE_INFO_HEADERS,         false);
+    configs.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,   StringSerializer.class);
+    configs.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+    configs.put(ProducerConfig.ACKS_CONFIG,                   "all");
+    configs.put(ProducerConfig.RETRIES_CONFIG,                3);
+    configs.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG,     true);
+    configs.put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, 1);
+    configs.put(JsonSerializer.ADD_TYPE_INFO_HEADERS,         false);
 
-        DefaultKafkaProducerFactory<String, Object> factory =
-                new DefaultKafkaProducerFactory<>(configs);
-        factory.setTransactionIdPrefix("compliance-tx-");
-        return factory;
+    DefaultKafkaProducerFactory<String, Object> factory =
+            new DefaultKafkaProducerFactory<>(configs);
+
+    String txIdPrefix = appProperties.getKafka().getTransactionalIdPrefix();
+    if (txIdPrefix != null && !txIdPrefix.isBlank()) {
+        factory.setTransactionIdPrefix(txIdPrefix);
+        log.info("Kafka producer transactions ENABLED with prefix '{}'", txIdPrefix);
+    } else {
+        log.info("Kafka producer transactions disabled (idempotent mode only)");
     }
+
+    return factory;
+}
 
     @Bean
     public KafkaTemplate<String, Object> kafkaTemplate() {

@@ -68,8 +68,10 @@ COPY --from=builder --chown=compliance:compliance \
 USER compliance
 
 # ── Ports ─────────────────────────────────────────────────────
-EXPOSE 8080   # API
-EXPOSE 8081   # Actuator / management
+EXPOSE 8080   
+# API
+EXPOSE 8081 
+  # Actuator / management
 
 # ── JVM tuning ────────────────────────────────────────────────
 ENV JAVA_OPTS="\

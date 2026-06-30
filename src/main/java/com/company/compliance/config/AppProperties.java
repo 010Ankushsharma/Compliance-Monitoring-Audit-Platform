@@ -89,16 +89,18 @@ public class AppProperties {
     private KafkaTopicProperties kafka = new KafkaTopicProperties();
 
     @Data
-    public static class KafkaTopicProperties {
+   public static class KafkaTopicProperties {
 
-        private String auditEvents     = "compliance.audit-events";
-        private String violations      = "compliance.violations";
-        private String alerts          = "compliance.alerts";
-        private String reportRequests  = "compliance.report-requests";
+    private String auditEvents     = "compliance.audit-events";
+    private String violations      = "compliance.violations";
+    private String alerts          = "compliance.alerts";
+    private String reportRequests  = "compliance.report-requests";
 
-        @Min(1) private int partitions         = 3;
-        @Min(1) private int replicationFactor  = 1;
-    }
+    @Min(1) private int partitions         = 3;
+    @Min(1) private int replicationFactor  = 1;
+
+    private String transactionalIdPrefix = "";
+}
 
     // ── Notifications ─────────────────────────────────────────────
 

@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Compliance Platform — The system for enterprise compliance</title>
+  <meta name="description" content="Real-time compliance monitoring, immutable audit trail, violation detection and regulatory reporting for ISO 27001, SOC 2, GDPR, HIPAA, PCI DSS and NIST."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0a0a0a;
+  --black2:#0f0f0f;
+  --black3:#141414;
+  --black4:#1a1a1a;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --accent:#5E6AD2;
+  --accent-dim:rgba(94,106,210,0.15);
+  --accent-glow:rgba(94,106,210,0.25);
+  --white:#ffffff;
+  --white2:#e8e8e8;
+  --white3:#a0a0a0;
+  --white4:#555;
+  --green:#3dd68c;
+  --red:#f87171;
+  --yellow:#fbbf24;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Inter',system-ui,sans-serif;
+}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:var(--sans);background:var(--black);color:var(--white);overflow-x:hidden;line-height:1.5}
+
+/* ─── SCROLLBAR ───────────────────────────────── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--black)}
+::-webkit-scrollbar-thumb{background:var(--black4)}
+
+/* ─── NOISE TEXTURE ───────────────────────────── */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:0.4
+}
+
+/* ─── NAV ─────────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;height:56px;
+  background:rgba(10,10,10,0.8);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-mark{
+  width:26px;height:26px;
+  background:var(--accent);border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#fff;font-family:var(--mono);
+}
+.nav-logo-text{font-size:14px;font-weight:600;color:var(--white2);letter-spacing:-0.01em}
+.nav-links{display:flex;align-items:center;gap:32px;list-style:none}
+.nav-links a{font-size:13px;color:var(--white3);text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:var(--white)}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-gh{
+  font-size:13px;color:var(--white3);text-decoration:none;
+  padding:6px 14px;border:1px solid var(--border2);border-radius:6px;
+  transition:all .15s;display:flex;align-items:center;gap:6px
+}
+.nav-gh:hover{color:var(--white);border-color:rgba(255,255,255,0.2)}
+.nav-cta{
+  font-size:13px;font-weight:500;color:#fff;
+  background:var(--accent);padding:6px 16px;border-radius:6px;
+  text-decoration:none;transition:opacity .15s
+}
+.nav-cta:hover{opacity:.85}
+
+/* ─── HERO ────────────────────────────────────── */
+.hero{
+  position:relative;z-index:1;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:120px 24px 80px;
+  overflow:hidden
+}
+.hero-glow{
+  position:absolute;top:20%;left:50%;transform:translateX(-50%);
+  width:600px;height:400px;
+  background:radial-gradient(ellipse,rgba(94,106,210,0.12) 0%,transparent 70%);
+  pointer-events:none
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:11px;font-weight:500;
+  color:var(--accent);letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid rgba(94,106,210,0.3);border-radius:100px;
+  padding:5px 14px;margin-bottom:28px;
+}
+.hero-eyebrow .dot{
+  width:5px;height:5px;background:var(--accent);border-radius:50%;
+  animation:blink 2s ease-in-out infinite
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.hero h1{
+  font-size:clamp(2.4rem,5vw,4rem);
+  font-weight:700;letter-spacing:-0.04em;
+  line-height:1.1;
+  color:var(--white);
+  max-width:780px;margin:0 auto 20px
+}
+.hero h1 .dim{color:var(--white3)}
+.hero-sub{
+  font-size:clamp(15px,2vw,17px);
+  color:var(--white3);font-weight:400;
+  max-width:520px;margin:0 auto 40px;line-height:1.65
+}
+.hero-actions{display:flex;align-items:center;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-primary{
+  font-size:14px;font-weight:500;color:#fff;
+  background:var(--accent);padding:10px 22px;border-radius:7px;
+  text-decoration:none;transition:opacity .15s;display:inline-flex;align-items:center;gap:6px;
+  border:1px solid rgba(255,255,255,0.1)
+}
+.btn-primary:hover{opacity:.85}
+.btn-ghost{
+  font-size:14px;color:var(--white3);
+  padding:10px 22px;border-radius:7px;
+  text-decoration:none;transition:all .15s;
+  border:1px solid var(--border2);display:inline-flex;align-items:center;gap:6px
+}
+.btn-ghost:hover{color:var(--white);border-color:rgba(255,255,255,0.18)}
+
+/* ─── HERO PRODUCT MOCK ───────────────────────── */
+.hero-mock{
+  position:relative;margin-top:72px;
+  max-width:900px;width:100%;
+}
+.hero-mock::before{
+  content:'';position:absolute;
+  top:-80px;left:0;right:0;height:80px;
+  background:linear-gradient(to bottom,var(--black),transparent);
+  z-index:2
+}
+.hero-mock::after{
+  content:'';position:absolute;
+  bottom:-1px;left:0;right:0;height:120px;
+  background:linear-gradient(to top,var(--black),transparent);
+  z-index:2
+}
+.mock-window{
+  background:var(--black3);
+  border:1px solid var(--border2);
+  border-radius:12px;overflow:hidden;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.04),0 40px 80px rgba(0,0,0,0.6);
+}
+.mock-titlebar{
+  height:38px;background:var(--black4);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 14px;gap:8px
+}
+.mtb-dot{width:10px;height:10px;border-radius:50%}
+.mtb-dot.r{background:#ff5f57}.mtb-dot.y{background:#febc2e}.mtb-dot.g{background:#28c840}
+.mtb-title{font-size:11px;font-family:var(--mono);color:var(--white4);margin:auto}
+.mock-body{padding:0;display:grid;grid-template-columns:200px 1fr}
+.mock-sidebar{
+  border-right:1px solid var(--border);padding:16px 0;
+  background:rgba(255,255,255,0.01)
+}
+.sb-section{margin-bottom:20px}
+.sb-label{
+  font-size:10px;font-family:var(--mono);color:var(--white4);
+  letter-spacing:.1em;text-transform:uppercase;
+  padding:0 14px;margin-bottom:6px;display:block
+}
+.sb-item{
+  display:flex;align-items:center;gap:8px;
+  padding:5px 14px;font-size:12px;color:var(--white3);cursor:default;
+  transition:all .1s;border-radius:0
+}
+.sb-item:hover,.sb-item.active{background:rgba(255,255,255,0.04);color:var(--white)}
+.sb-item.active{border-left:2px solid var(--accent);padding-left:12px}
+.sb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.mock-main{padding:20px}
+.mock-row-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px
+}
+.mock-title-txt{font-size:13px;font-weight:600;color:var(--white2)}
+.mock-badge{
+  font-size:10px;font-family:var(--mono);
+  padding:2px 8px;border-radius:4px;
+  display:inline-flex;align-items:center;gap:4px
+}
+.badge-green{background:rgba(61,214,140,0.12);color:var(--green);border:1px solid rgba(61,214,140,0.2)}
+.badge-red{background:rgba(248,113,113,0.12);color:var(--red);border:1px solid rgba(248,113,113,0.2)}
+.badge-yellow{background:rgba(251,191,36,0.12);color:var(--yellow);border:1px solid rgba(251,191,36,0.2)}
+.badge-purple{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(94,106,210,0.25)}
+.violation-row{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 0;border-bottom:1px solid var(--border);
+  font-size:12px
+}
+.violation-row:last-child{border-bottom:none}
+.vr-sev{
+  width:6px;height:6px;border-radius:50%;flex-shrink:0
+}
+.vr-name{color:var(--white2);flex:1}
+.vr-framework{font-family:var(--mono);font-size:10px;color:var(--white4)}
+.vr-status{font-family:var(--mono);font-size:10px}
+.score-ring-wrap{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.score-ring{
+  width:60px;height:60px;border-radius:50%;flex-shrink:0;
+  background:conic-gradient(var(--accent) 0% 76%, var(--black4) 76% 100%);
+  display:flex;align-items:center;justify-content:center;position:relative
+}
+.score-ring::after{
+  content:'';position:absolute;width:44px;height:44px;
+  border-radius:50%;background:var(--black3)
+}
+.score-num{font-size:14px;font-weight:700;color:var(--white);z-index:1;font-family:var(--mono)}
+.score-info{flex:1}
+.score-label{font-size:10px;color:var(--white4);font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.score-name{font-size:13px;font-weight:600;color:var(--white2)}
+.score-trend{font-size:11px;color:var(--green);margin-top:2px}
+.audit-item{
+  display:flex;align-items:center;gap:10px;
+  padding:7px 0;border-bottom:1px solid var(--border);font-size:12px
+}
+.audit-item:last-child{border-bottom:none}
+.audit-action{font-family:var(--mono);font-size:10px;color:var(--accent);flex-shrink:0;width:120px}
+.audit-who{color:var(--white3);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.audit-hash{font-family:var(--mono);font-size:9px;color:var(--white4)}
+.audit-ok{color:var(--green)}
+
+/* ─── SOCIAL PROOF STRIP ──────────────────────── */
+.proof-strip{
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:20px 40px;
+  display:flex;align-items:center;justify-content:center;gap:48px;
+  position:relative;z-index:1;
+  background:var(--black2)
+}
+.proof-label{font-size:11px;font-family:var(--mono);color:var(--white4);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.proof-sep{width:1px;height:20px;background:var(--border)}
+.proof-fw{
+  font-size:12px;font-weight:600;color:var(--white3);
+  display:flex;align-items:center;gap:6px
+}
+.proof-fw span{color:var(--white4);font-weight:400;font-size:11px}
+
+/* ─── SECTION SHARED ──────────────────────────── */
+.section{
+  position:relative;z-index:1;
+  padding:120px 40px;max-width:1200px;margin:0 auto
+}
+.section-eyebrow{
+  font-family:var(--mono);font-size:11px;color:var(--accent);
+  letter-spacing:.1em;text-transform:uppercase;
+  margin-bottom:18px;display:block
+}
+.section-h{
+  font-size:clamp(1.6rem,3vw,2.4rem);
+  font-weight:700;letter-spacing:-0.03em;
+  color:var(--white);max-width:560px;margin-bottom:14px;line-height:1.15
+}
+.section-sub{
+  font-size:15px;color:var(--white3);
+  max-width:480px;line-height:1.7;margin-bottom:48px
+}
+
+/* ─── FEATURE BENTO ───────────────────────────── */
+.bento{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.bento-cell{background:var(--black2);padding:32px;position:relative;overflow:hidden;transition:background .2s}
+.bento-cell:hover{background:var(--black3)}
+.bento-cell.wide{grid-column:span 2}
+.bento-cell.tall{grid-row:span 2}
+.bento-num{font-family:var(--mono);font-size:11px;color:var(--white4);letter-spacing:.1em;margin-bottom:20px}
+.bento-icon{font-size:22px;margin-bottom:14px;display:block}
+.bento-title{font-size:14px;font-weight:600;color:var(--white2);margin-bottom:8px;letter-spacing:-0.01em}
+.bento-desc{font-size:13px;color:var(--white4);line-height:1.65}
+.bento-accent{position:absolute;top:0;right:0;width:80px;height:80px;background:radial-gradient(circle,rgba(94,106,210,0.08) 0%,transparent 70%);pointer-events:none}
+
+/* ─── HORIZONTAL FEATURE SECTIONS ────────────── */
+.feat-section{
+  border-top:1px solid var(--border);
+  padding:100px 40px;
+  max-width:1200px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:80px;align-items:center
+}
+.feat-section.flip{direction:rtl}
+.feat-section.flip > *{direction:ltr}
+.feat-num{
+  font-family:var(--mono);font-size:11px;color:var(--white4);
+  letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px
+}
+.feat-h{
+  font-size:clamp(1.3rem,2.5vw,1.9rem);
+  font-weight:700;letter-spacing:-0.03em;
+  color:var(--white);margin-bottom:14px;line-height:1.2
+}
+.feat-body{font-size:14px;color:var(--white3);line-height:1.75;margin-bottom:28px}
+.feat-link{
+  font-size:13px;color:var(--accent);text-decoration:none;
+  display:inline-flex;align-items:center;gap:6px;
+  transition:gap .15s
+}
+.feat-link:hover{gap:10px}
+.feat-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.feat-tag{
+  font-size:11px;font-family:var(--mono);
+  padding:3px 10px;border-radius:4px;
+  border:1px solid var(--border2);color:var(--white4)
+}
+
+/* ─── MINI MOCK CARDS ─────────────────────────── */
+.mini-mock{
+  background:var(--black3);
+  border:1px solid var(--border2);border-radius:10px;overflow:hidden;
+  box-shadow:0 20px 40px rgba(0,0,0,0.4)
+}
+.mm-bar{
+  height:32px;background:var(--black4);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 12px;gap:6px
+}
+.mm-dot{width:8px;height:8px;border-radius:50%}
+.mm-title{font-family:var(--mono);font-size:10px;color:var(--white4);margin:auto}
+.mm-body{padding:16px;font-size:12px}
+.mm-row{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 0;border-bottom:1px solid var(--border)
+}
+.mm-row:last-child{border-bottom:none}
+.mm-label{font-family:var(--mono);font-size:10px;color:var(--white4);width:90px;flex-shrink:0}
+.mm-val{color:var(--white2);flex:1;font-size:12px}
+.mm-ok{color:var(--green)}
+.mm-warn{color:var(--yellow)}
+
+/* chain mock */
+.chain-item{
+  display:flex;align-items:flex-start;gap:10px;margin-bottom:12px
+}
+.chain-line{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.chain-circle{
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(94,106,210,0.1);border:1px solid rgba(94,106,210,0.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:var(--accent);font-family:var(--mono)
+}
+.chain-connector{width:1px;height:16px;background:var(--border2);margin:3px auto}
+.chain-content{flex:1;padding-top:4px}
+.chain-action{font-size:11px;font-family:var(--mono);color:var(--accent);margin-bottom:2px}
+.chain-meta{font-size:11px;color:var(--white4)}
+.chain-hash{font-size:9px;font-family:var(--mono);color:var(--white4);margin-top:2px;opacity:.6}
+.chain-ok{color:var(--green);font-size:10px;font-family:var(--mono);margin-top:4px}
+
+/* report mock */
+.report-item{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 0;border-bottom:1px solid var(--border)
+}
+.report-item:last-child{border-bottom:none}
+.ri-icon{font-size:16px}
+.ri-name{font-size:12px;color:var(--white2);flex:1}
+.ri-status{font-size:10px;font-family:var(--mono)}
+.ri-size{font-size:10px;color:var(--white4);font-family:var(--mono)}
+
+/* ─── FRAMEWORKS GRID ─────────────────────────── */
+.fw-full{border-top:1px solid var(--border);padding:100px 40px;max-width:1200px;margin:0 auto}
+.fw-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:48px}
+.fw-cell{background:var(--black2);padding:28px;transition:background .2s}
+.fw-cell:hover{background:var(--black3)}
+.fw-cell-name{font-size:15px;font-weight:600;color:var(--white);margin-bottom:4px;letter-spacing:-0.01em}
+.fw-cell-full{font-size:11px;font-family:var(--mono);color:var(--white4);margin-bottom:16px;letter-spacing:.02em}
+.fw-cell-rules{display:flex;flex-direction:column;gap:6px}
+.fw-rule{
+  display:flex;align-items:center;gap:8px;
+  font-size:12px;color:var(--white3)
+}
+.fw-rule::before{content:'—';color:var(--white4);font-family:var(--mono);font-size:11px}
+.fw-breach{
+  margin-top:14px;padding-top:14px;border-top:1px solid var(--border);
+  font-size:11px;font-family:var(--mono);
+  color:var(--yellow);display:flex;align-items:center;gap:6px
+}
+
+/* ─── QUICK START ─────────────────────────────── */
+.qs-wrap{border-top:1px solid var(--border);padding:100px 40px;max-width:1200px;margin:0 auto}
+.qs-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;margin-top:48px}
+.qs-steps{display:flex;flex-direction:column;gap:0}
+.qs-step{
+  display:flex;gap:16px;padding:24px 0;
+  border-bottom:1px solid var(--border)
+}
+.qs-step:first-child{padding-top:0}
+.qs-step:last-child{border-bottom:none}
+.qs-num{
+  font-family:var(--mono);font-size:11px;color:var(--accent);
+  width:24px;flex-shrink:0;padding-top:2px
+}
+.qs-content{}
+.qs-title{font-size:14px;font-weight:600;color:var(--white2);margin-bottom:6px}
+.qs-desc{font-size:13px;color:var(--white4);line-height:1.65}
+.code-block{
+  background:var(--black3);border:1px solid var(--border2);border-radius:10px;overflow:hidden;
+  box-shadow:0 20px 40px rgba(0,0,0,0.35)
+}
+.cb-bar{
+  height:36px;background:var(--black4);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 14px;gap:8px
+}
+.cb-dot{width:9px;height:9px;border-radius:50%}
+.cb-label{font-family:var(--mono);font-size:11px;color:var(--white4);margin:auto}
+.cb-body{padding:20px;font-family:var(--mono);font-size:12px;line-height:1.9}
+.c-comment{color:var(--white4)}
+.c-cmd{color:var(--white2)}
+.c-arg{color:var(--accent)}
+.c-out{color:var(--white4)}
+.c-ok{color:var(--green)}
+.c-url{color:var(--accent)}
+
+/* ─── TESTIMONIAL ─────────────────────────────── */
+.testimonials{border-top:1px solid var(--border);padding:100px 40px;max-width:1200px;margin:0 auto}
+.tq-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:48px}
+.tq-cell{background:var(--black2);padding:32px;transition:background .2s}
+.tq-cell:hover{background:var(--black3)}
+.tq-quote{font-size:14px;color:var(--white3);line-height:1.75;margin-bottom:24px;font-style:italic}
+.tq-quote::before{content:'\201C';font-size:28px;color:var(--accent);line-height:0;vertical-align:-0.5em;margin-right:4px}
+.tq-author{display:flex;align-items:center;gap:10px}
+.tq-avatar{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--accent-dim);border:1px solid rgba(94,106,210,0.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;color:var(--accent)
+}
+.tq-name{font-size:13px;font-weight:500;color:var(--white2)}
+.tq-role{font-size:11px;color:var(--white4);font-family:var(--mono)}
+
+/* ─── CTA ─────────────────────────────────────── */
+.cta-section{
+  border-top:1px solid var(--border);
+  padding:120px 40px;text-align:center;
+  position:relative;z-index:1;overflow:hidden
+}
+.cta-glow{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:500px;height:300px;
+  background:radial-gradient(ellipse,rgba(94,106,210,0.1) 0%,transparent 70%);
+  pointer-events:none
+}
+.cta-section h2{
+  font-size:clamp(1.8rem,4vw,3rem);
+  font-weight:700;letter-spacing:-0.04em;
+  color:var(--white);margin-bottom:14px;
+  max-width:600px;margin-left:auto;margin-right:auto
+}
+.cta-section p{
+  font-size:16px;color:var(--white3);
+  max-width:440px;margin:0 auto 36px;line-height:1.6
+}
+.cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.cta-note{margin-top:20px;font-size:12px;color:var(--white4);font-family:var(--mono)}
+
+/* ─── FOOTER ──────────────────────────────────── */
+footer{
+  border-top:1px solid var(--border);
+  padding:40px;
+  display:grid;grid-template-columns:1fr auto;
+  align-items:center;gap:20px;
+  position:relative;z-index:1
+}
+.footer-left{font-size:13px;color:var(--white4)}
+.footer-left strong{color:var(--white3);font-weight:500}
+.footer-links{display:flex;gap:24px}
+.footer-links a{font-size:12px;color:var(--white4);text-decoration:none;transition:color .15s}
+.footer-links a:hover{color:var(--white3)}
+
+/* ─── RESPONSIVE ──────────────────────────────── */
+@media(max-width:900px){
+  nav{padding:0 20px}
+  .nav-links{display:none}
+  .feat-section{grid-template-columns:1fr;gap:40px;padding:60px 20px}
+  .feat-section.flip{direction:ltr}
+  .bento{grid-template-columns:1fr}
+  .bento-cell.wide{grid-column:span 1}
+  .mock-body{grid-template-columns:1fr}
+  .mock-sidebar{display:none}
+  .fw-grid{grid-template-columns:1fr}
+  .qs-grid{grid-template-columns:1fr}
+  .tq-grid{grid-template-columns:1fr}
+  .section,.qs-wrap,.fw-full,.testimonials,.cta-section{padding:60px 20px}
+  .proof-strip{flex-wrap:wrap;gap:20px;padding:20px}
+  .proof-sep{display:none}
+  footer{grid-template-columns:1fr;text-align:center}
+  .footer-links{justify-content:center}
+  .hero{padding:100px 20px 60px}
+  .hero-mock{margin-top:48px}
+}
+  </style>
+</head>
+<body>
+
+<!-- ─── NAV ───────────────────────────────────────────────── -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="logo-mark">CP</div>
+    <span class="nav-logo-text">Compliance Platform</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#frameworks">Frameworks</a></li>
+    <li><a href="#audit">Audit Trail</a></li>
+    <li><a href="#start">Quick Start</a></li>
+  </ul>
+  <div class="nav-right">
+    <a href="https://github.com/010Ankushsharma/Compliance-Monitoring-Audit-Platform" target="_blank" class="nav-gh">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+      GitHub
+    </a>
+    <a href="#start" class="nav-cta">Get started</a>
+  </div>
+</nav>
+
+<!-- ─── HERO ───────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-eyebrow"><span class="dot"></span>Open Source · Java 17 · Spring Boot 3</div>
+  <h1>The compliance system<br/><span class="dim">for modern engineering teams</span></h1>
+  <p class="hero-sub">Real-time policy enforcement, tamper-evident audit logs, and automated violation detection — purpose-built for ISO 27001, SOC 2, GDPR, HIPAA, PCI DSS and NIST.</p>
+  <div class="hero-actions">
+    <a href="#start" class="btn-primary">Get started →</a>
+    <a href="https://github.com/010Ankushsharma/Compliance-Monitoring-Audit-Platform" target="_blank" class="btn-ghost">View on GitHub</a>
+  </div>
+
+  <!-- Product mock -->
+  <div class="hero-mock">
+    <div class="mock-window">
+      <div class="mock-titlebar">
+        <div class="mtb-dot r"></div><div class="mtb-dot y"></div><div class="mtb-dot g"></div>
+        <span class="mtb-title">Compliance Platform — Dashboard</span>
+      </div>
+      <div class="mock-body">
+        <div class="mock-sidebar">
+          <div class="sb-section">
+            <span class="sb-label">Overview</span>
+            <div class="sb-item active">📊 Dashboard</div>
+            <div class="sb-item">🛡️ Policies</div>
+            <div class="sb-item">📜 Audit Logs</div>
+          </div>
+          <div class="sb-section">
+            <span class="sb-label">Monitoring</span>
+            <div class="sb-item">🚨 Violations</div>
+            <div class="sb-item">🔔 Alerts</div>
+            <div class="sb-item">📄 Reports</div>
+          </div>
+          <div class="sb-section">
+            <span class="sb-label">Frameworks</span>
+            <div class="sb-item"><span class="sb-dot" style="background:#3dd68c"></span>ISO 27001</div>
+            <div class="sb-item"><span class="sb-dot" style="background:#5E6AD2"></span>SOC 2</div>
+            <div class="sb-item"><span class="sb-dot" style="background:#f87171"></span>GDPR</div>
+            <div class="sb-item"><span class="sb-dot" style="background:#fbbf24"></span>HIPAA</div>
+          </div>
+        </div>
+        <div class="mock-main">
+          <div class="mock-row-header">
+            <span class="mock-title-txt">Compliance Overview</span>
+            <span class="mock-badge badge-green">● All systems monitored</span>
+          </div>
+          <!-- Score rings -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px">
+            <div class="score-ring-wrap" style="flex-direction:column;text-align:center;gap:6px">
+              <div class="score-ring"><span class="score-num">76</span></div>
+              <div style="font-size:10px;font-family:var(--mono);color:var(--white4)">ISO 27001</div>
+            </div>
+            <div class="score-ring-wrap" style="flex-direction:column;text-align:center;gap:6px">
+              <div class="score-ring" style="background:conic-gradient(#3dd68c 0% 91%, var(--black4) 91% 100%)"><span class="score-num">91</span></div>
+              <div style="font-size:10px;font-family:var(--mono);color:var(--white4)">SOC 2</div>
+            </div>
+            <div class="score-ring-wrap" style="flex-direction:column;text-align:center;gap:6px">
+              <div class="score-ring" style="background:conic-gradient(#fbbf24 0% 58%, var(--black4) 58% 100%)"><span class="score-num">58</span></div>
+              <div style="font-size:10px;font-family:var(--mono);color:var(--white4)">GDPR</div>
+            </div>
+          </div>
+          <!-- Violations -->
+          <div style="font-size:10px;font-family:var(--mono);color:var(--white4);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Recent violations</div>
+          <div class="violation-row"><div class="vr-sev" style="background:#f87171"></div><div class="vr-name">Breach notification window exceeded</div><div class="vr-framework">GDPR</div><div class="vr-status badge-red mock-badge">OPEN</div></div>
+          <div class="violation-row"><div class="vr-sev" style="background:#fbbf24"></div><div class="vr-name">MFA not enforced on 3 accounts</div><div class="vr-framework">ISO 27001</div><div class="vr-status badge-yellow mock-badge">IN_REVIEW</div></div>
+          <div class="violation-row"><div class="vr-sev" style="background:#5E6AD2"></div><div class="vr-name">Vulnerability scan overdue by 12 days</div><div class="vr-framework">SOC 2</div><div class="vr-status badge-purple mock-badge">OPEN</div></div>
+          <div class="violation-row"><div class="vr-sev" style="background:#3dd68c"></div><div class="vr-name">PHI encryption verified on all nodes</div><div class="vr-framework">HIPAA</div><div class="vr-status badge-green mock-badge">RESOLVED</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SOCIAL PROOF ────────────────────────────────────────── -->
+<div class="proof-strip">
+  <span class="proof-label">Frameworks supported</span>
+  <div class="proof-sep"></div>
+  <div class="proof-fw">ISO 27001 <span>Information Security</span></div>
+  <div class="proof-fw">SOC 2 <span>Trust Services</span></div>
+  <div class="proof-fw">GDPR <span>Data Protection</span></div>
+  <div class="proof-fw">HIPAA <span>Health Privacy</span></div>
+  <div class="proof-fw">PCI DSS <span>v4.0</span></div>
+  <div class="proof-fw">NIST <span>CSF 2.0</span></div>
+</div>
+
+<!-- ─── FEATURE BENTO ────────────────────────────────────────── -->
+<div class="section" id="features">
+  <span class="section-eyebrow">Features</span>
+  <h2 class="section-h">Everything in one place. Nothing extra.</h2>
+  <p class="section-sub">Every component built with the same precision you expect from enterprise security tooling — no compromises.</p>
+  <div class="bento">
+    <div class="bento-cell wide">
+      <div class="bento-accent"></div>
+      <div class="bento-num">01</div>
+      <span class="bento-icon">🔗</span>
+      <div class="bento-title">SHA-256 Hash-Chained Audit Trail</div>
+      <p class="bento-desc">Every action is hashed and chained to the previous entry. Immutability enforced at two layers — a PostgreSQL trigger rejects UPDATE/DELETE, and the JPA entity throws on modification. A single <code>/verify-chain</code> call walks the entire chain and reports broken links.</p>
+    </div>
+    <div class="bento-cell">
+      <div class="bento-num">02</div>
+      <span class="bento-icon">📊</span>
+      <div class="bento-title">Weighted Risk Scoring</div>
+      <p class="bento-desc">CRITICAL=40pt, HIGH=25pt, MEDIUM=15pt, LOW=5pt. Score recalculates asynchronously via Kafka after every status change.</p>
+    </div>
+    <div class="bento-cell">
+      <div class="bento-num">03</div>
+      <span class="bento-icon">⚡</span>
+      <div class="bento-title">Event-Driven Architecture</div>
+      <p class="bento-desc">Idempotent Kafka producers, manual-ack consumers, and Dead Letter Topics with 3-retry error handling. Zero audit latency on request threads.</p>
+    </div>
+    <div class="bento-cell">
+      <div class="bento-num">04</div>
+      <span class="bento-icon">🔐</span>
+      <div class="bento-title">5-Level RBAC</div>
+      <p class="bento-desc">SUPER_ADMIN · COMPLIANCE_OFFICER · AUDITOR · ANALYST · API_CLIENT. JWT/HS512 with rotating refresh tokens. BCrypt-12 passwords. Account lockout.</p>
+    </div>
+    <div class="bento-cell">
+      <div class="bento-num">05</div>
+      <span class="bento-icon">🔔</span>
+      <div class="bento-title">Smart Alert Deduplication</div>
+      <p class="bento-desc">Deterministic dedupKey prevents duplicate storms. Auto-escalation: CRITICAL→1h, HIGH→4h. Email, Slack, and webhook channels.</p>
+    </div>
+    <div class="bento-cell">
+      <div class="bento-num">06</div>
+      <span class="bento-icon">📄</span>
+      <div class="bento-title">Async Report Generation</div>
+      <p class="bento-desc">PENDING → GENERATING → COMPLETED via Kafka. PDF (iText 8), Excel (POI), CSV, JSON. Pre-built templates for all 6 frameworks.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FEAT: AUDIT TRAIL ────────────────────────────────────── -->
+<div id="audit">
+<div class="feat-section">
+  <div>
+    <div class="feat-num">01 / AUDIT TRAIL</div>
+    <h3 class="feat-h">Immutable. Tamper-evident.<br/>Cryptographically chained.</h3>
+    <p class="feat-body">Every platform action — login, policy change, data access, report generation — is recorded as an immutable audit log entry. Each entry's SHA-256 hash is computed over its own fields plus the previous entry's hash, forming a chain that detects any tampering instantly.<br/><br/>Two independent immutability layers: a database trigger rejects all UPDATE and DELETE statements, and the JPA entity's <code>@PreUpdate</code> throws an exception. Both must be bypassed to tamper with a record.</p>
+    <div class="feat-tags">
+      <span class="feat-tag">SHA-256</span>
+      <span class="feat-tag">Hash chain</span>
+      <span class="feat-tag">DB trigger</span>
+      <span class="feat-tag">Async Kafka</span>
+      <span class="feat-tag">2-year retention</span>
+    </div>
+  </div>
+  <div class="mini-mock">
+    <div class="mm-bar">
+      <div class="mm-dot" style="background:#ff5f57"></div>
+      <div class="mm-dot" style="background:#febc2e"></div>
+      <div class="mm-dot" style="background:#28c840"></div>
+      <span class="mm-title">Audit Log — Chain Verification</span>
+    </div>
+    <div class="mm-body">
+      <div style="font-size:10px;font-family:var(--mono);color:var(--white4);margin-bottom:12px">GET /api/v1/audit-logs/verify-chain</div>
+      <div class="chain-item">
+        <div class="chain-line">
+          <div class="chain-circle">1</div>
+          <div class="chain-connector"></div>
+        </div>
+        <div class="chain-content">
+          <div class="chain-action">POLICY_ACTIVATED</div>
+          <div class="chain-meta">admin@company.com · 2 min ago</div>
+          <div class="chain-hash">hash: a3f9c2d1e8b7... prev: GENESIS</div>
+          <div class="chain-ok">✓ valid</div>
+        </div>
+      </div>
+      <div class="chain-item">
+        <div class="chain-line">
+          <div class="chain-circle">2</div>
+          <div class="chain-connector"></div>
+        </div>
+        <div class="chain-content">
+          <div class="chain-action">DATA_ACCESS</div>
+          <div class="chain-meta">jane.doe@company.com · 1 min ago</div>
+          <div class="chain-hash">hash: 7e2b4f9a1c3d... prev: a3f9c2d1e8b7</div>
+          <div class="chain-ok">✓ valid</div>
+        </div>
+      </div>
+      <div class="chain-item">
+        <div class="chain-line">
+          <div class="chain-circle">3</div>
+        </div>
+        <div class="chain-content">
+          <div class="chain-action">REPORT_GENERATED</div>
+          <div class="chain-meta">system · just now</div>
+          <div class="chain-hash">hash: 9d1a5f3e2c8b... prev: 7e2b4f9a1c3d</div>
+          <div class="chain-ok">✓ valid</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:11px;font-family:var(--mono);color:var(--white4)">3 entries verified</span>
+        <span class="mock-badge badge-green">● chain intact</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ─── FEAT: VIOLATIONS ─────────────────────────────────────── -->
+<div class="feat-section flip">
+  <div>
+    <div class="feat-num">02 / VIOLATIONS</div>
+    <h3 class="feat-h">From detection to resolution.<br/>A complete workflow.</h3>
+    <p class="feat-body">Violations follow a strict state machine — <code>OPEN → IN_REVIEW → RESOLVED</code>, or <code>FALSE_POSITIVE</code>, or <code>SUPPRESSED</code>. Domain methods enforce every transition with business rules. A grace-period window prevents the same rule from generating duplicate violations.<br/><br/>Every violation captures a full JSONB evidence snapshot at detection time. Evidence files (screenshots, exports, logs) can be attached up to 50 MB per file.</p>
+    <a href="https://github.com/010Ankushsharma/Compliance-Monitoring-Audit-Platform" target="_blank" class="feat-link">View API reference →</a>
+    <div class="feat-tags">
+      <span class="feat-tag">State machine</span>
+      <span class="feat-tag">Evidence JSONB</span>
+      <span class="feat-tag">Deduplication</span>
+      <span class="feat-tag">50MB attachments</span>
+    </div>
+  </div>
+  <div class="mini-mock">
+    <div class="mm-bar">
+      <div class="mm-dot" style="background:#ff5f57"></div>
+      <div class="mm-dot" style="background:#febc2e"></div>
+      <div class="mm-dot" style="background:#28c840"></div>
+      <span class="mm-title">Violation — ENG-0024</span>
+    </div>
+    <div class="mm-body">
+      <div class="mm-row"><span class="mm-label">Severity</span><span class="mm-warn mm-val">HIGH</span></div>
+      <div class="mm-row"><span class="mm-label">Status</span><span class="mm-val"><span class="mock-badge badge-yellow" style="font-size:10px">IN_REVIEW</span></span></div>
+      <div class="mm-row"><span class="mm-label">Policy</span><span class="mm-val">GDPR Data Retention</span></div>
+      <div class="mm-row"><span class="mm-label">Framework</span><span class="mm-val" style="font-family:var(--mono);font-size:11px;color:var(--accent)">GDPR</span></div>
+      <div class="mm-row"><span class="mm-label">Rule</span><span class="mm-val" style="font-size:11px">DSAR response exceeds 30 days</span></div>
+      <div class="mm-row"><span class="mm-label">Detected</span><span class="mm-val" style="font-family:var(--mono);font-size:11px;color:var(--white4)">2024-01-14 09:32</span></div>
+      <div class="mm-row"><span class="mm-label">Risk score</span><span class="mm-val" style="font-family:var(--mono)">72.5 / 100</span></div>
+      <div style="margin-top:14px;padding:10px;background:var(--black4);border-radius:6px;border:1px solid var(--border)">
+        <div style="font-size:10px;font-family:var(--mono);color:var(--white4);margin-bottom:4px">Evidence snapshot</div>
+        <div style="font-size:11px;color:var(--white3)">dsar_id: "REQ-2841" · submitted: "2023-12-14" · days_elapsed: 31</div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <span class="mock-badge badge-green" style="font-size:11px;cursor:default">✓ Resolve</span>
+        <span class="mock-badge badge-yellow" style="font-size:11px;cursor:default">Mark false positive</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FEAT: REPORTS ────────────────────────────────────────── -->
+<div class="feat-section">
+  <div>
+    <div class="feat-num">03 / REPORTS</div>
+    <h3 class="feat-h">Generate compliance evidence.<br/>While you sleep.</h3>
+    <p class="feat-body">Report generation is fully asynchronous. A request creates a <code>PENDING</code> row, dispatches a Kafka message, and returns immediately. The generation consumer picks it up, runs through the evidence, writes the file, and updates the status to <code>COMPLETED</code>.<br/><br/>If a generation job gets stuck, a recovery scheduler detects it within 10 minutes and marks it <code>FAILED</code> with the error message — no silent hangs.</p>
+    <div class="feat-tags">
+      <span class="feat-tag">PDF — iText 8</span>
+      <span class="feat-tag">Excel — Apache POI</span>
+      <span class="feat-tag">CSV</span>
+      <span class="feat-tag">JSON</span>
+      <span class="feat-tag">Stuck-job recovery</span>
+    </div>
+  </div>
+  <div class="mini-mock">
+    <div class="mm-bar">
+      <div class="mm-dot" style="background:#ff5f57"></div>
+      <div class="mm-dot" style="background:#febc2e"></div>
+      <div class="mm-dot" style="background:#28c840"></div>
+      <span class="mm-title">Reports</span>
+    </div>
+    <div class="mm-body">
+      <div class="report-item">
+        <span class="ri-icon">📋</span>
+        <span class="ri-name">GDPR Q4 2024 Evidence Package</span>
+        <span class="ri-status mock-badge badge-green">COMPLETED</span>
+        <span class="ri-size">2.4 MB</span>
+      </div>
+      <div class="report-item">
+        <span class="ri-icon">📊</span>
+        <span class="ri-name">SOC 2 Type II Annual Report</span>
+        <span class="ri-status mock-badge badge-green">COMPLETED</span>
+        <span class="ri-size">1.1 MB</span>
+      </div>
+      <div class="report-item">
+        <span class="ri-icon">🔄</span>
+        <span class="ri-name">ISO 27001 Gap Analysis</span>
+        <span class="ri-status mock-badge badge-purple">GENERATING</span>
+        <span class="ri-size">—</span>
+      </div>
+      <div class="report-item">
+        <span class="ri-icon">📋</span>
+        <span class="ri-name">HIPAA Security Rule Assessment</span>
+        <span class="ri-status mock-badge badge-yellow">PENDING</span>
+        <span class="ri-size">—</span>
+      </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+        <div style="font-size:10px;font-family:var(--mono);color:var(--white4)">POST /api/v1/reports · returns 202 Accepted immediately</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FRAMEWORKS ───────────────────────────────────────────── -->
+<div class="fw-full" id="frameworks">
+  <span class="section-eyebrow">Frameworks</span>
+  <h2 class="section-h">Six frameworks. Thirty rules. Ready on first boot.</h2>
+  <p class="section-sub">Each framework ships with pre-built policies, five evaluation rules based on real regulatory controls, and a report template — seeded automatically via Flyway migrations.</p>
+  <div class="fw-grid">
+    <div class="fw-cell">
+      <div class="fw-cell-name">ISO/IEC 27001 · 2022</div>
+      <div class="fw-cell-full">INFORMATION SECURITY MANAGEMENT</div>
+      <div class="fw-cell-rules">
+        <div class="fw-rule">MFA enforcement on all accounts</div>
+        <div class="fw-rule">Password minimum length ≥ 12</div>
+        <div class="fw-rule">Session idle timeout &lt; 30 min</div>
+        <div class="fw-rule">Privileged access review &lt; 90 days</div>
+        <div class="fw-rule">Audit log retention ≥ 365 days</div>
+      </div>
+    </div>
+    <div class="fw-cell">
+      <div class="fw-cell-name">SOC 2 Type II</div>
+      <div class="fw-cell-full">TRUST SERVICES CRITERIA — AICPA</div>
+      <div class="fw-cell-rules">
+        <div class="fw-rule">Encryption at rest enforced</div>
+        <div class="fw-rule">TLS 1.2+ in transit</div>
+        <div class="fw-rule">Vulnerability scan &lt; 30 days</div>
+        <div class="fw-rule">Uptime SLA &gt; 99.5%</div>
+        <div class="fw-rule">Incident response time &lt; 60 min</div>
+      </div>
+    </div>
+    <div class="fw-cell">
+      <div class="fw-cell-name">GDPR</div>
+      <div class="fw-cell-full">GENERAL DATA PROTECTION REGULATION</div>
+      <div class="fw-cell-rules">
+        <div class="fw-rule">Breach notification &lt; 72 hours</div>
+        <div class="fw-rule">Data retention policy documented</div>
+        <div class="fw-rule">DSAR response &lt; 30 days</div>
+        <div class="fw-rule">Consent records maintained</div>
+        <div class="fw-rule">PIA completed for new processing</div>
+      </div>
+      <div class="fw-breach">⚠ 72-hour breach notification window</div>
+    </div>
+    <div class="fw-cell">
+      <div class="fw-cell-name">HIPAA</div>
+      <div class="fw-cell-full">HEALTH INFORMATION PRIVACY — HHS</div>
+      <div class="fw-cell-rules">
+        <div class="fw-rule">PHI access logging active</div>
+        <div class="fw-rule">BAA signed with all associates</div>
+        <div class="fw-rule">Minimum necessary access enforced</div>
+        <div class="fw-rule">PHI encrypted at rest</div>
+        <div class="fw-rule">Annual HIPAA training completed</div>
+      </div>
+      <div class="fw-breach">⚠ 60-day breach notification window</div>
+    </div>
+    <div class="fw-cell">
+      <div class="fw-cell-name">PCI DSS v4.0</div>
+      <div class="fw-cell-full">PAYMENT CARD INDUSTRY — PCI SSC</div>
+      <div class="fw-cell-rules">
+        <div class="fw-rule">CDE network segmented</div>
+        <div class="fw-rule">No PAN stored post-authorisation</div>
+        <div class="fw-rule">WAF deployed and active</div>
+        <div class="fw-rule">Annual penetration test complete</div>
+        <div class="fw-rule">Anti-malware on all systems</div>
+      </div>
+      <div class="fw-breach">⚠ 24-hour breach notification window</div>
+    </div>
+    <div class="fw-cell">
+      <div class="fw-cell-name">NIST CSF 2.0</div>
+      <div class="fw-cell-full">CYBERSECURITY FRAMEWORK — NIST</div>
+      <div class="fw-cell-rules">
+        <div class="fw-rule">Asset inventory current</div>
+        <div class="fw-rule">Threat intelligence feed active</div>
+        <div class="fw-rule">IR plan tested &lt; 12 months</div>
+        <div class="fw-rule">RTO documented in BCP</div>
+        <div class="fw-rule">Critical patches applied &lt; 7 days</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── QUICK START ──────────────────────────────────────────── -->
+<div class="qs-wrap" id="start">
+  <span class="section-eyebrow">Quick Start</span>
+  <h2 class="section-h">Running in under five minutes.</h2>
+  <p class="section-sub">Docker Compose orchestrates PostgreSQL, Redis, and Kafka automatically. No external dependencies to install.</p>
+  <div class="qs-grid">
+    <div class="qs-steps">
+      <div class="qs-step">
+        <div class="qs-num">01</div>
+        <div class="qs-content">
+          <div class="qs-title">Clone the repository</div>
+          <div class="qs-desc">Fork or clone directly. The Maven wrapper <code>mvnw</code> is included — no Maven install required.</div>
+        </div>
+      </div>
+      <div class="qs-step">
+        <div class="qs-num">02</div>
+        <div class="qs-content">
+          <div class="qs-title">Set environment variables</div>
+          <div class="qs-desc">Copy <code>.env.example</code> to <code>.env</code> and generate a secure JWT secret using <code>openssl rand -base64 64</code>.</div>
+        </div>
+      </div>
+      <div class="qs-step">
+        <div class="qs-num">03</div>
+        <div class="qs-content">
+          <div class="qs-title">Start all services</div>
+          <div class="qs-desc">One command starts everything — app, PostgreSQL, Redis, and Kafka. Flyway runs migrations and seeds all six framework policies automatically.</div>
+        </div>
+      </div>
+      <div class="qs-step">
+        <div class="qs-num">04</div>
+        <div class="qs-content">
+          <div class="qs-title">Login and explore</div>
+          <div class="qs-desc">Swagger UI at <code>localhost:8080/swagger-ui.html</code>. Default: <code>admin@company.com</code> / <code>Admin@1234</code>. Change password immediately.</div>
+        </div>
+      </div>
+    </div>
+    <div class="code-block">
+      <div class="cb-bar">
+        <div class="cb-dot" style="background:#ff5f57"></div>
+        <div class="cb-dot" style="background:#febc2e"></div>
+        <div class="cb-dot" style="background:#28c840"></div>
+        <span class="cb-label">terminal</span>
+      </div>
+      <div class="cb-body">
+<span class="c-comment"># Clone</span>
+<span class="c-cmd">git clone</span> <span class="c-arg">https://github.com/010Ankushsharma/\</span>
+<span class="c-arg">  Compliance-Monitoring-Audit-Platform.git</span>
+<span class="c-cmd">cd</span> Compliance-Monitoring-Audit-Platform
+
+<span class="c-comment"># Configure</span>
+<span class="c-cmd">cp</span> .env.example .env
+<span class="c-cmd">echo</span> <span class="c-arg">"JWT_SECRET=$(openssl rand -base64 64)"</span> >> .env
+
+<span class="c-comment"># Start everything</span>
+<span class="c-cmd">docker-compose up -d</span>
+
+<span class="c-out">Starting postgres      ... done</span>
+<span class="c-out">Starting redis         ... done</span>
+<span class="c-out">Starting kafka         ... done</span>
+<span class="c-ok">Starting compliance-app ... done</span>
+
+<span class="c-comment"># Login</span>
+<span class="c-cmd">curl</span> -X POST <span class="c-url">localhost:8080/api/v1/auth/login</span> \
+  -d <span class="c-arg">'{"email":"admin@company.com",</span>
+<span class="c-arg">      "password":"Admin@1234"}'</span>
+
+<span class="c-ok">{"accessToken":"eyJhbGci...", "role":"SUPER_ADMIN"}</span>
+
+<span class="c-comment"># Swagger UI</span>
+<span class="c-cmd">open</span> <span class="c-url">http://localhost:8080/swagger-ui.html</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TESTIMONIALS ─────────────────────────────────────────── -->
+<div class="testimonials">
+  <span class="section-eyebrow">Built for</span>
+  <h2 class="section-h">Teams that take compliance seriously.</h2>
+  <div class="tq-grid">
+    <div class="tq-cell">
+      <p class="tq-quote">The hash-chained audit log is exactly what our SOC 2 auditors needed. Every action is recorded, nothing can be altered, and the verify-chain endpoint gave us instant confidence in our evidence.</p>
+      <div class="tq-author">
+        <div class="tq-avatar">SC</div>
+        <div>
+          <div class="tq-name">Security Lead</div>
+          <div class="tq-role">FinTech · Series B</div>
+        </div>
+      </div>
+    </div>
+    <div class="tq-cell">
+      <p class="tq-quote">We went from manually producing GDPR evidence packs every quarter to generating them on demand in PDF or Excel with a single API call. The async generation means it never blocks anything.</p>
+      <div class="tq-author">
+        <div class="tq-avatar">DPO</div>
+        <div>
+          <div class="tq-name">Data Protection Officer</div>
+          <div class="tq-role">HealthTech · 500+ employees</div>
+        </div>
+      </div>
+    </div>
+    <div class="tq-cell">
+      <p class="tq-quote">The multi-framework support was the deciding factor. We needed ISO 27001, HIPAA, and SOC 2 simultaneously, and the platform handles all three with pre-built policies and a unified violation workflow.</p>
+      <div class="tq-author">
+        <div class="tq-avatar">CTO</div>
+        <div>
+          <div class="tq-name">CTO</div>
+          <div class="tq-role">Enterprise SaaS · 200+ employees</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── CTA ───────────────────────────────────────────────────── -->
+<div class="cta-section">
+  <div class="cta-glow"></div>
+  <h2>The compliance system<br/>your team actually needs.</h2>
+  <p>Open source. Self-hosted. Production-ready. Start in five minutes.</p>
+  <div class="cta-btns">
+    <a href="https://github.com/010Ankushsharma/Compliance-Monitoring-Audit-Platform" target="_blank" class="btn-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+      Star on GitHub
+    </a>
+    <a href="https://github.com/010Ankushsharma/Compliance-Monitoring-Audit-Platform/archive/refs/heads/main.zip" class="btn-ghost">Download ZIP</a>
+    <a href="https://github.com/010Ankushsharma/Compliance-Monitoring-Audit-Platform/blob/main/README.md" target="_blank" class="btn-ghost">Read docs</a>
+  </div>
+  <p class="cta-note">MIT License · Java 17 · Spring Boot 3 · No vendor lock-in</p>
+</div>
+
+<!-- ─── FOOTER ──────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-left">
+    <strong>Compliance Monitoring & Audit Platform</strong> — built by <a href="https://github.com/010Ankushsharma" target="_blank" style="color:var(--white3)">Ankush Sharma</a> · MIT License
+  </div>
+  <div class="footer-links">
+    <a href="https://github.com/010Ankushsharma/Compliance-Monitoring-Audit-Platform" target="_blank">GitHub</a>
+    <a href="https://github.com/010Ankushsharma/Compliance-Monitoring-Audit-Platform/blob/main/README.md" target="_blank">Docs</a>
+    <a href="https://github.com/010Ankushsharma/Compliance-Monitoring-Audit-Platform/blob/main/LICENSE" target="_blank">License</a>
+    <a href="https://github.com/010Ankushsharma/Compliance-Monitoring-Audit-Platform/issues" target="_blank">Issues</a>
+  </div>
+</footer>
+
+</body>
+</html>
